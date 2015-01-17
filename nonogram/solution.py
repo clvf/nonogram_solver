@@ -18,8 +18,7 @@ class Solution(object):
         self.height = len(table)
 
     def __str__(self):
-        """Eloallitja a specifikacioban megkovetelt szoveges reprezentaciojat
-        a puzzle belso modelljenek."""
+        """String representation of the internal model."""
         #return "\r\n".join((str(row) for row in self.table)).encode('ascii') + "\r\n"
         return "\r\n".join(row.decode('ascii') for row in self.table) + "\r\n"
 

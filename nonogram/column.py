@@ -2,9 +2,9 @@
 Class incorporating the information that we know of a column.
 """
 
-import line
+from .line import Line
 
-class Column(line.Line):
+class Column(Line):
 
     def __init__(self, *args):
         super(Column, self).__init__(*args)

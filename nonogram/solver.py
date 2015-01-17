@@ -2,7 +2,7 @@
 Implementation of the logic to solve the nonogram.
 """
 
-import solution
+from .solution import Solution
 
 class DiscrepancyInModel(Exception):
     pass
@@ -22,7 +22,8 @@ class Solver(object):
     def solve(self, raster):
         """Does a rule based elimination on the raster object and returns a
         solution (object) if there's any and None otherwise."""
-        return solution.Solution(raster.table)
+        #return Solution(raster.table)
+        return None
 
     def update(self, p_idx, p_is_row, p_mask):
         """A metodus a megadott maszk alapjan modositja a sor/oszlop

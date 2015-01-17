@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import raster
-import solver
+from nonogram.raster import Raster
+from nonogram.solver import Solver
 import argparse
 import logging
 import sys
@@ -9,8 +9,8 @@ import sys
 
 def initialize_raster(file_content):
     """Process the file_content and returns a Raster object."""
-    raster_internals = raster.Raster.parse_metadata(specification=file_content)
-    return raster.Raster(**raster_internals)
+    raster_internals = Raster.parse_metadata(specification=file_content)
+    return Raster(**raster_internals)
 
 
 def main(args=None):
@@ -18,7 +18,8 @@ def main(args=None):
     with open(args.input_file, 'r') as INPUT:
         raster = initialize_raster(INPUT.readlines())
         logging.info("\n=====\nRule Based Elimination:\n=====\n")
-        solution = solver.Solver().solve(raster)
+        solution = Solver().solve(raster)
+
         if not solution:
             print("Program couldn't find any solution.")
             logging.info(str(raster))

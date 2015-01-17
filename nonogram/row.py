@@ -2,9 +2,9 @@
 Class incorporating the information that we know of a row.
 """
 
-import line
+from .line import Line
 
-class Row(line.Line):
+class Row(Line):
 
     def __init__(self, *args):
         super(Row, self).__init__(*args)

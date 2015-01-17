@@ -3,10 +3,10 @@ Class representing the nonogram modell.
 """
 
 from functools import reduce
-import block
-import column
 import copy
-import row
+from .block import Block
+from .column import Column
+from .row import Row
 
 BLACK = 88   # \x58: ascii 'X'
 WHITE = 32   # \x20: ascii ' '
@@ -38,12 +38,12 @@ class Raster(object):
             size = height if not is_row else width
             meta_idx = idx if not is_row else idx - width
 
-            blocks = [block.Block(0, size-1, length) for length in specification[idx].split()]
+            blocks = [Block(0, size-1, length) for length in specification[idx].split()]
 
             if is_row:
-                row_meta.append(row.Row(size, idx, blocks))
+                row_meta.append(Row(size, idx, blocks))
             else:
-                col_meta.append(column.Column(size, idx, blocks))
+                col_meta.append(Column(size, idx, blocks))
 
         return dict(table=table, row_meta=row_meta, col_meta=col_meta)
 
@@ -69,9 +69,6 @@ class Raster(object):
 
         return repr_ + "\n"
 
-    def is_solved(self):
-        return True
-
     def get_row_col(self, p_idx, p_is_row):
         """A metodus a belso tabla idx indexu soranak vagy oszlopanak
         _MASOLATAT_ adja vissza.
@@ -90,8 +87,7 @@ class Raster(object):
         self.table[p_idx] = p_row
 
     def is_solved(self):
-        """Ha nincs tobb cella "UNKNOWN" ertekkel, akkor a puzzle megoldott, legalabbis
-        a feldolgozasnak vege kell legyen."""
+        """If there's no "UNKNOWN" cell, then the puzzle is solved."""
         return reduce(lambda x, y: x and not UNKNOWN in y, self.table, True)
 
     def clone(self):
