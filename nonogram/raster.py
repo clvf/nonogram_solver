@@ -7,6 +7,7 @@ import copy
 
 from .block import Block
 from .column import Column
+from .discrepancyinmodel import DiscrepancyInModel
 from .row import Row
 
 BLACK = 88   # \x58: ascii 'X'
@@ -30,6 +31,7 @@ class Raster(object):
 
         table = [bytearray((UNKNOWN for j in range(width)))
                  for i in range(height)]
+        # table = [[UNKNOWN for j in range(width)] for i in range(height)]
         row_meta = list()
         col_meta = list()
 
@@ -74,29 +76,61 @@ class Raster(object):
 
         return repr_ + "\n"
 
-    def get_row_col(self, p_idx, p_is_row):
-        """A metodus a belso tabla idx indexu soranak vagy oszlopanak
-        _MASOLATAT_ adja vissza.
-        """
-        if p_is_row:
-            res = self.table[p_idx][:]
-        else:
-            res = bytearray((x[p_idx] for x in self.table))
+    def get_row(self, idx):
+        """Returns the copy of the idx'th row of the internal table."""
+        return self.table[idx][:]
 
-        return res
-
-    def replace_row(self, p_idx, p_row):
-        """A metodus lecsereli a belso tabla egy sorat a parameterben
-        megadott sorral. Ez a metodus csak a melysegi bejaras alkalmaval
-        kerul meghivasra."""
-        self.table[p_idx] = p_row
+    def get_col(self, idx):
+        """Returns the copy of the idx'th column of the internal table."""
+        return bytearray((x[idx] for x in self.table))
 
     def is_solved(self):
         """If there's no "UNKNOWN" cell, then the puzzle is solved."""
         return reduce(lambda x, y: x and not UNKNOWN in y, self.table, True)
 
-    def clone(self):
-        table_copy = copy.deepcopy(self.table)
-        # row_meta_copy = [m.clone() for m in self.row_meta]
-        # col_meta_copy = [m.clone() for m in self.col_meta]
-        return Raster(table=table_copy)
+    def update_row(self, idx, mask):
+        """Updates the UNKNOWN cells of the idx'th row based on the mask."""
+        row = self.get_row(idx)
+        new = self.update_list(rec=row, mask=mask)
+        self.replace_row(row=new, idx=idx)
+
+    def replace_row(self, row=None, idx=None):
+        """Replace the idx'th row of the internal table with the value in the
+        params."""
+        self.table[idx] = row
+
+    def update_list(self, rec=None, mask=None):
+        """Updates the list based on the mask."""
+        original = copy.deepcopy(rec)
+        for i in range(len(rec)):
+            if rec[i] == UNKNOWN and mask[i] != UNKNOWN:
+                rec[i] = mask[i]
+
+            if rec[i] != UNKNOWN and mask[i] != UNKNOWN \
+                    and rec[i] != mask[i]:
+                raise DiscrepancyInModel("CURRENT: " + original + "\n"
+                                       + "NEW:     " + str(mask))
+
+        if modified_cells and __debug__:
+            logging.debug("UPDATE: " + str(mask) + "\n")
+            logging.debug(str(self))
+
+        return rec
+
+    def update_col(self, idx, mask):
+        """Updates the UNKNOWN cells of the idx'th column based on the mask."""
+        col = self.get_col(idx)
+        new = self.update_list(rec=col, mask=mask)
+        self.replace_col(col=new, idx=idx)
+
+    def replace_col(self, col=None, idx=None):
+        """Replace the idx'th column of the internal table with the value in
+        the params."""
+        for cell_idx in range(len(col)):
+            self.table[cell_idx][idx] = col[cell_idx]
+
+#    def clone(self):
+#        table_copy = copy.deepcopy(self.table)
+#        # row_meta_copy = [m.clone() for m in self.row_meta]
+#        # col_meta_copy = [m.clone() for m in self.col_meta]
+#        return Raster(table=table_copy)

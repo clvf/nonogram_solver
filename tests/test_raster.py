@@ -27,7 +27,7 @@ class TestRaster(unittest.TestCase):
 
     def test_parsemetadata_valid(self):
         self.maxDiff = None
-        key = """10 5
+        spec = """10 5
 1
 3
 2
@@ -63,13 +63,12 @@ class TestRaster(unittest.TestCase):
                          Row(10, 3, [
                              Block(0, 9, 3), Block(0, 9, 1), Block(0, 9, 1)]),
                          Row(10, 4, [Block(0, 9, 1), Block(0, 9, 1), Block(0, 9, 1)])]
-        },
-            key)
+        }, spec)
 
     def assertParseMeta(self, expected_result, input_):
         self.assertCountEqual(expected_result, Raster.parse_metadata(input_))
 
-    def test_is_valid(self):
+    def test_is_solved(self):
         raster = Raster(table=[bytearray((UNKNOWN for j in range(2)))
                         for i in range(3)], row_meta=[], col_meta=[])
         self.assertEqual(False, raster.is_solved())
@@ -82,6 +81,41 @@ class TestRaster(unittest.TestCase):
 
         raster.table[0][0] = UNKNOWN
         self.assertEqual(False, raster.is_solved())
+
+    def test_get_row(self):
+        raster = Raster(table=[bytearray((UNKNOWN for j in range(2)))
+                        for i in range(3)], row_meta=[], col_meta=[])
+        raster.table[0] = bytearray([BLACK, WHITE])
+        self.assertEqual(bytearray([BLACK, WHITE]), raster.get_row(0))
+
+    def test_replace_row(self):
+        raster = Raster(table=[bytearray((UNKNOWN for j in range(2)))
+                        for i in range(3)], row_meta=[], col_meta=[])
+
+        row = bytearray([BLACK, WHITE])
+        raster.replace_row(row, 0)
+
+        self.assertEqual(row, raster.get_row(0))
+        self.assertNotEqual(row, raster.get_row(1))
+
+    def test_get_col(self):
+        raster = Raster(table=[bytearray((UNKNOWN for j in range(2)))
+                        for i in range(3)], row_meta=[], col_meta=[])
+
+        for i in range(3):
+            raster.table[i][0] = BLACK
+        self.assertEqual(bytearray([BLACK, BLACK, BLACK]), raster.get_col(0))
+
+    def test_replace_col(self):
+        raster = Raster(table=[bytearray((UNKNOWN for j in range(2)))
+                        for i in range(3)], row_meta=[], col_meta=[])
+
+        col = bytearray([BLACK, WHITE, BLACK])
+        raster.replace_col(col, 1)
+
+        self.assertEqual(col, raster.get_col(1))
+        self.assertNotEqual(col, raster.get_col(0))
+
 
 if __name__ == '__main__':
     unittest.main()
