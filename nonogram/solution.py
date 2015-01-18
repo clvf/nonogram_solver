@@ -3,6 +3,7 @@ Class representing the solution of a puzzle.
 """
 
 import struct
+from .commonequality import CommonEquality
 
 # Globals
 WHITE = (255, 255, 255)
@@ -10,7 +11,7 @@ BLACK = (0, 0, 0)
 BPP = 24
 
 
-class Solution(object):
+class Solution(CommonEquality):
 
     def __init__(self, table):
         self.table = table
@@ -19,7 +20,8 @@ class Solution(object):
 
     def __str__(self):
         """String representation of the internal model."""
-        #return "\r\n".join((str(row) for row in self.table)).encode('ascii') + "\r\n"
+        # return "\r\n".join((str(row) for row in self.table)).encode('ascii')
+        # + "\r\n"
         return "\r\n".join(row.decode('ascii') for row in self.table) + "\r\n"
 
     def _compile_bmp_header(self):
@@ -34,9 +36,9 @@ class Solution(object):
                            54,     # offset: 14 + 40 (BMP header + DIB header)
                            40,     # header size (BITMAPINFOHEADER)
                            self.width,  # number of columns
-                           -1 * self.height, # number of rows
-                                             # (if <0 -> the picture won't be
-                                             # upside down)
+                           -1 * self.height,  # number of rows
+                           # (if <0 -> the picture won't be
+                           # upside down)
                            1,      # number of color planes
                            BPP,    # 24 bpp
                            0,      # no compression

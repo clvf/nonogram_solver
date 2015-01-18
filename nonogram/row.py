@@ -4,6 +4,7 @@ Class incorporating the information that we know of a row.
 
 from .line import Line
 
+
 class Row(Line):
 
     def __init__(self, *args):

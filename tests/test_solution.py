@@ -2,6 +2,7 @@
 
 import unittest
 
+
 class TestSolution(unittest.TestCase):
     pass
 

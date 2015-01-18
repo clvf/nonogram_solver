@@ -2,8 +2,10 @@
 Class incorporating the information that we have of a block.
 """
 
+from .commonequality import CommonEquality
 
-class Block(object):
+
+class Block(CommonEquality):
 
     def __init__(self, start, end, length):
         self.start = start

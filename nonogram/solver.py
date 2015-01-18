@@ -4,11 +4,12 @@ Implementation of the logic to solve the nonogram.
 
 from .solution import Solution
 
+
 class DiscrepancyInModel(Exception):
     pass
 
 
-#class FoundSolution(Exception):
+# class FoundSolution(Exception):
 #
 #    def __init__(self, value):
 #        self.value = value
@@ -22,7 +23,7 @@ class Solver(object):
     def solve(self, raster):
         """Does a rule based elimination on the raster object and returns a
         solution (object) if there's any and None otherwise."""
-        #return Solution(raster.table)
+        # return Solution(raster.table)
         return None
 
     def update(self, p_idx, p_is_row, p_mask):
@@ -44,7 +45,7 @@ class Solver(object):
                 if self.table[p_idx][i] != UNKNOWN and p_mask[i] != UNKNOWN \
                         and self.table[p_idx][i] != p_mask[i]:
                     raise DiscrepancyInModel("CURRENT: " + self.table[p_idx] + "\n"
-                                           + "NEW:     " + str(p_mask))
+                                             + "NEW:     " + str(p_mask))
             if cell_updated:
                 if __debug__:
                     logging.debug("UPDATE: " + str(p_mask) + "\n")
@@ -62,7 +63,7 @@ class Solver(object):
                 if self.table[i][p_idx] != UNKNOWN and p_mask[i] != UNKNOWN \
                         and self.table[i][p_idx] != p_mask[i]:
                     raise DiscrepancyInModel("CURRENT: " + self.get_row_col(p_idx, p_is_row) + "\n"
-                                           + "NEW:     " + str(p_mask))
+                                             + "NEW:     " + str(p_mask))
             if cell_updated:
                 if __debug__:
                     logging.debug("UPDATE: " + str(p_mask) + "\n")

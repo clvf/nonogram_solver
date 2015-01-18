@@ -4,6 +4,7 @@ Class incorporating the information that we know of a column.
 
 from .line import Line
 
+
 class Column(Line):
 
     def __init__(self, *args):

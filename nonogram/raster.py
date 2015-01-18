@@ -4,6 +4,7 @@ Class representing the nonogram modell.
 
 from functools import reduce
 import copy
+
 from .block import Block
 from .column import Column
 from .row import Row
@@ -27,7 +28,8 @@ class Raster(object):
         header = specification.pop(0).split()
         (width, height) = (int(header[0]), int(header[1]))
 
-        table = [bytearray((UNKNOWN for j in range(width))) for i in range(height)]
+        table = [bytearray((UNKNOWN for j in range(width)))
+                 for i in range(height)]
         row_meta = list()
         col_meta = list()
 
@@ -38,7 +40,8 @@ class Raster(object):
             size = height if not is_row else width
             meta_idx = idx if not is_row else idx - width
 
-            blocks = [Block(0, size-1, length) for length in specification[idx].split()]
+            blocks = [Block(0, size - 1, length)
+                      for length in specification[idx].split()]
 
             if is_row:
                 row_meta.append(Row(size, idx, blocks))
@@ -53,7 +56,8 @@ class Raster(object):
         for i in range(self.width):
             line = offset + "|" * i
             line += "+" + "-" * (self.width - 1 - i) + " "
-            line += "; ".join((str(block) for block in self.col_meta[i].blocks))
+            line += "; ".join((str(block)
+                              for block in self.col_meta[i].blocks))
             repr_ += line + "\n"
 
         header = offset
@@ -64,7 +68,8 @@ class Raster(object):
         for i in range(self.height):
             line = " " + str(i % 10) + " "
             line += self.table[i].decode('ascii') + " "
-            line += "; ".join((str(block) for block in self.row_meta[i].blocks))
+            line += "; ".join((str(block)
+                              for block in self.row_meta[i].blocks))
             repr_ += line + "\n"
 
         return repr_ + "\n"
@@ -92,6 +97,6 @@ class Raster(object):
 
     def clone(self):
         table_copy = copy.deepcopy(self.table)
-        #row_meta_copy = [m.clone() for m in self.row_meta]
-        #col_meta_copy = [m.clone() for m in self.col_meta]
+        # row_meta_copy = [m.clone() for m in self.row_meta]
+        # col_meta_copy = [m.clone() for m in self.col_meta]
         return Raster(table=table_copy)

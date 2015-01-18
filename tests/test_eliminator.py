@@ -2,6 +2,7 @@
 
 import unittest
 
+
 class TestEliminator(unittest.TestCase):
     pass
 

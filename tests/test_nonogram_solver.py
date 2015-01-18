@@ -2,6 +2,7 @@
 
 import unittest
 
+
 class TestNonogramSolver(unittest.TestCase):
     pass
 
