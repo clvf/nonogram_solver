@@ -1,5 +1,5 @@
 """
-Class representing the nonogram modell.
+Class representing the nonogram model.
 """
 
 from functools import reduce
@@ -31,7 +31,7 @@ class Raster(object):
 
         table = [bytearray((UNKNOWN for j in range(width)))
                  for i in range(height)]
-        # table = [[UNKNOWN for j in range(width)] for i in range(height)]
+
         row_meta = list()
         col_meta = list()
 
@@ -46,9 +46,9 @@ class Raster(object):
                       for length in specification[idx].split()]
 
             if is_row:
-                row_meta.append(Row(size, idx, blocks))
+                row_meta.append(Row(size, meta_idx, blocks))
             else:
-                col_meta.append(Column(size, idx, blocks))
+                col_meta.append(Column(size, meta_idx, blocks))
 
         return dict(table=table, row_meta=row_meta, col_meta=col_meta)
 
@@ -74,6 +74,9 @@ class Raster(object):
                               for block in self.row_meta[i].blocks))
             repr_ += line + "\n"
 
+        repr_ = repr_ + "\n".join((str(meta) for meta in self.col_meta))
+        repr_ = repr_ + "\n" + "\n".join((str(meta) for meta in self.row_meta))
+
         return repr_ + "\n"
 
     def get_row(self, idx):
@@ -88,42 +91,49 @@ class Raster(object):
         """If there's no "UNKNOWN" cell, then the puzzle is solved."""
         return reduce(lambda x, y: x and not UNKNOWN in y, self.table, True)
 
-    def update_row(self, idx, mask):
+    def update_row(self, idx=None, mask=None):
         """Updates the UNKNOWN cells of the idx'th row based on the mask."""
         row = self.get_row(idx)
-        new = self.update_list(rec=row, mask=mask)
-        self.replace_row(row=new, idx=idx)
+        (new, modified_cells) = self._update_list(rec=row, mask=mask)
+        self._replace_row(row=new, idx=idx)
 
-    def replace_row(self, row=None, idx=None):
+        return modified_cells
+
+    def _replace_row(self, row=None, idx=None):
         """Replace the idx'th row of the internal table with the value in the
         params."""
         self.table[idx] = row
 
-    def update_list(self, rec=None, mask=None):
+    def _update_list(self, rec=None, mask=None):
         """Updates the list based on the mask."""
+        modified_cells = []
         original = copy.deepcopy(rec)
+
         for i in range(len(rec)):
             if rec[i] == UNKNOWN and mask[i] != UNKNOWN:
                 rec[i] = mask[i]
+                modified_cells.append(i)
 
             if rec[i] != UNKNOWN and mask[i] != UNKNOWN \
                     and rec[i] != mask[i]:
-                raise DiscrepancyInModel("CURRENT: " + original + "\n"
-                                       + "NEW:     " + str(mask))
+                raise DiscrepancyInModel("CURRENT: {!s} NEW: {!s}".format(original, mask))
 
         if modified_cells and __debug__:
-            logging.debug("UPDATE: " + str(mask) + "\n")
-            logging.debug(str(self))
+            pass
+            #logging.debug("UPDATE: " + str(mask) + "\n")
+            #logging.debug(str(self))
 
-        return rec
+        return rec, modified_cells
 
-    def update_col(self, idx, mask):
+    def update_col(self, idx=None, mask=None):
         """Updates the UNKNOWN cells of the idx'th column based on the mask."""
         col = self.get_col(idx)
-        new = self.update_list(rec=col, mask=mask)
-        self.replace_col(col=new, idx=idx)
+        (new, modified_cells) = self._update_list(rec=col, mask=mask)
+        self._replace_col(col=new, idx=idx)
 
-    def replace_col(self, col=None, idx=None):
+        return modified_cells
+
+    def _replace_col(self, col=None, idx=None):
         """Replace the idx'th column of the internal table with the value in
         the params."""
         for cell_idx in range(len(col)):
