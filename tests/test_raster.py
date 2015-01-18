@@ -14,10 +14,18 @@ from nonogram.block import Block
 from nonogram.column import Column
 from nonogram.row import Row
 
+from nonogram.raster import BLACK
+from nonogram.raster import UNKNOWN
+from nonogram.raster import WHITE
+
 
 class TestRaster(unittest.TestCase):
 
-    def test_parsemetadata(self):
+    def test_parsemetadata_no_spec(self):
+        with self.assertRaises(AttributeError):
+            Raster.parse_metadata()
+
+    def test_parsemetadata_valid(self):
         self.maxDiff = None
         key = """10 5
 1
@@ -61,6 +69,19 @@ class TestRaster(unittest.TestCase):
     def assertParseMeta(self, expected_result, input_):
         self.assertCountEqual(expected_result, Raster.parse_metadata(input_))
 
+    def test_is_valid(self):
+        raster = Raster(table=[bytearray((UNKNOWN for j in range(2)))
+                        for i in range(3)], row_meta=[], col_meta=[])
+        self.assertEqual(False, raster.is_solved())
+
+        raster.table = [bytearray((BLACK for i in range(2)))]
+        self.assertEqual(True, raster.is_solved())
+
+        raster.table = [bytearray((WHITE for i in range(2)))]
+        self.assertEqual(True, raster.is_solved())
+
+        raster.table[0][0] = UNKNOWN
+        self.assertEqual(False, raster.is_solved())
 
 if __name__ == '__main__':
     unittest.main()

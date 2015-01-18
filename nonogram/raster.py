@@ -10,8 +10,8 @@ from .column import Column
 from .row import Row
 
 BLACK = 88   # \x58: ascii 'X'
-WHITE = 32   # \x20: ascii ' '
 UNKNOWN = 46  # \x2E: ascii '.'
+WHITE = 32   # \x20: ascii ' '
 
 
 class Raster(object):
