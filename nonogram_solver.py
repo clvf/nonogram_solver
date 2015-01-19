@@ -14,7 +14,7 @@ def initialize_raster(file_content):
 
 
 def main(args=None):
-    # logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='%(message)s', level=logging.DEBUG)
     with open(args.input_file, 'r') as INPUT:
         raster = initialize_raster(INPUT.readlines())
         logging.debug("\n=====\nRule Based Elimination:\n=====\n")

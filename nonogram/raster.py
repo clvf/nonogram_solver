@@ -74,8 +74,9 @@ class Raster(object):
                               for block in self.row_meta[i].blocks))
             repr_ += line + "\n"
 
-        repr_ = repr_ + "\n".join((str(meta) for meta in self.col_meta))
-        repr_ = repr_ + "\n" + "\n".join((str(meta) for meta in self.row_meta))
+        # repr_ = repr_ + "\n".join((str(meta) for meta in self.col_meta))
+        # repr_ = repr_ + "\n" + "\n".join((str(meta) for meta in
+        #                                   self.row_meta))
 
         return repr_ + "\n"
 
@@ -137,6 +138,6 @@ class Raster(object):
 
 #    def clone(self):
 #        table_copy = copy.deepcopy(self.table)
-# row_meta_copy = [m.clone() for m in self.row_meta]
-# col_meta_copy = [m.clone() for m in self.col_meta]
+#        row_meta_copy = [m.clone() for m in self.row_meta]
+#        col_meta_copy = [m.clone() for m in self.col_meta]
 #        return Raster(table=table_copy)

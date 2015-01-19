@@ -32,6 +32,7 @@ class Solver(object):
 
                 self.fill_intersections(mask, meta)
                 self.check_spaces(mask, meta)
+                self.mark_white_cell_at_boundary(mask, meta)
 
                 if raster.update_row(mask=mask, idx=meta.idx):
                     cells_changed = True
@@ -41,6 +42,7 @@ class Solver(object):
 
                 self.fill_intersections(mask, meta)
                 self.check_spaces(mask, meta)
+                self.mark_white_cell_at_boundary(mask, meta)
 
                 if raster.update_col(mask=mask, idx=meta.idx):
                     cells_changed = True
@@ -109,3 +111,52 @@ class Solver(object):
                     mask[i] = WHITE
 
         logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
+
+    def mark_white_cell_at_boundary(self, mask, meta):
+        """Rule 1.3:
+
+        For each black runj, j = 1,...,k
+        (1) If the lengths of all black run i covering cell rj.s with i != j
+            are all one, cell rj.s - 1 will be left empty
+        (2) If the lengths of all black run i covering rj.e with i != j
+            are all one, cell rj.e + 1 will be left empty
+        """
+        # return if this line already "solved" completely
+        if UNKNOWN not in mask:
+            return
+
+        debug_prefix = "R1.2 check_spaces: {!s} -> ".format(mask)
+        debug_suffix = ", {!s}".format(meta)
+
+        for idx in range(len(meta.blocks)):
+            block = meta.blocks[idx]
+            blocks_wo_this = [meta.blocks[i]
+                              for i in range(len(meta.blocks)) if idx != i]
+
+            # if the start of the block is BLACK and the preceding cell is
+            # UNKNOWN
+            if mask[block.start] == BLACK and block.start - 1 >= 0 and \
+               mask[block.start - 1] == UNKNOWN:
+                covering_blocks = self._covering_blocks(blocks_wo_this,
+                                                        block.start)
+
+                if 1 == max([block.length for block in covering_blocks]):
+                    mask[block.start - 1] = WHITE
+
+            # if the end of the block is BLACK and the next cell is UNKNOWN
+            if mask[block.end] == BLACK and block.end + 1 < len(mask) and\
+               mask[block.end + 1] == UNKNOWN:
+                covering_blocks = self._covering_blocks(blocks_wo_this,
+                                                        block.end)
+                if 1 == max([block.length for block in covering_blocks]):
+                    mask[block.end + 1] = WHITE
+
+        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
+
+    def _covering_blocks(self, blocks, start, end=None):
+        """Returns the blocks that includes the [start:end] portion."""
+        if end is None:
+            end = start
+
+        return [block for block in blocks
+                if block.start <= start and block.end >= end]
