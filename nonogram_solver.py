@@ -17,12 +17,12 @@ def main(args=None):
     # logging.basicConfig(format='%(message)s', level=logging.DEBUG)
     with open(args.input_file, 'r') as INPUT:
         raster = initialize_raster(INPUT.readlines())
-        logging.info("\n=====\nRule Based Elimination:\n=====\n")
+        logging.debug("\n=====\nRule Based Elimination:\n=====\n")
         solution = Solver().solve(raster)
 
         if not solution:
             print("Program couldn't find any solution.")
-            logging.info(str(raster))
+            logging.debug(str(raster))
             sys.exit(1)
 
         print(str(solution), end='')

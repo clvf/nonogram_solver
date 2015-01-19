@@ -31,6 +31,7 @@ class Solver(object):
                 mask = raster.get_row(meta.idx)
 
                 self.fill_intersections(mask, meta)
+                self.check_spaces(mask, meta)
 
                 if raster.update_row(mask=mask, idx=meta.idx):
                     cells_changed = True
@@ -39,6 +40,7 @@ class Solver(object):
                 mask = raster.get_col(meta.idx)
 
                 self.fill_intersections(mask, meta)
+                self.check_spaces(mask, meta)
 
                 if raster.update_col(mask=mask, idx=meta.idx):
                     cells_changed = True
@@ -60,7 +62,7 @@ class Solver(object):
         if UNKNOWN not in mask:
             return
 
-        debug_prefix = "R 1.1%fill_intersections: {!s} -> ".format(mask)
+        debug_prefix = "R1.1 fill_intersections: {!s} -> ".format(mask)
         debug_suffix = ", {!s}".format(meta)
 
         for block in meta.blocks:
@@ -71,4 +73,39 @@ class Solver(object):
             ub = block.end - u + 1  # upper bound
             if lb < ub:
                 mask[lb:ub] = [BLACK] * (ub - lb)
+        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
+
+    def check_spaces(self, mask, meta):
+        """Rule 1.2:
+        When a cell does not belong to the run range of any black run, the
+        cell should be left empty.
+
+        For each cell ci, it will be left empty, if one of the following
+        three conditions is satisfied:
+        (1) 0 <= i < r1.s
+        (2) rk.e < i < n
+        (3) rj.e < i < rj+1.s for some j, 1 <= j < k
+        """
+        # return if this line already "solved" completely
+        if UNKNOWN not in mask:
+            return
+
+        debug_prefix = "R1.2 check_spaces: {!s} -> ".format(mask)
+        debug_suffix = ", {!s}".format(meta)
+
+        # if there are no black runs in the row/col at all...
+        if len(meta.blocks) == 0 or meta.blocks[0].length == 0:
+            mask[:] = [WHITE] * meta.size
+        else:
+            # (1)
+            for i in range(meta.blocks[0].start):
+                mask[i] = WHITE
+            # (2)
+            for i in range(meta.blocks[-1].end + 1, meta.size):
+                mask[i] = WHITE
+            # (3)
+            for j in range(len(meta.blocks) - 1):
+                for i in range(meta.blocks[j].end + 1, meta.blocks[j + 1].start):
+                    mask[i] = WHITE
+
         logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)

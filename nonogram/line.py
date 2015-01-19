@@ -7,9 +7,9 @@ from .commonequality import CommonEquality
 
 class Line(CommonEquality):
 
-    def __init__(self, size, idx, blocks):
-        self.size = size
-        self.idx = idx
+    def __init__(self, size=None, idx=None, blocks=None):
+        self.size = int(size)
+        self.idx = int(idx)
         self.blocks = blocks
 
     def __str__(self):

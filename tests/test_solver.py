@@ -26,7 +26,6 @@ class TestSolver(unittest.TestCase):
 
     def __init__(self, *args):
         logging.basicConfig(format='%(message)s', level=logging.DEBUG)
-        # self.raster = Raster(table=[[]], row_meta=[], col_meta=[])
 
         super(TestSolver, self).__init__(*args)
 
@@ -74,6 +73,43 @@ class TestSolver(unittest.TestCase):
         Solver().fill_intersections(
             mask, Line(0, 5, [Block(start=0, end=4, length=2)]))
         self.assertEqual(bytearray([UNKNOWN] * 5), mask)
+
+    def test_check_spaces(self):
+        # if there's no black run at all...
+        mask = bytearray([UNKNOWN] * 4)
+        Solver().check_spaces(mask, Line(size=4, idx=4, blocks=[]))
+        self.assertEqual(bytearray([WHITE] * 4), mask)
+
+        mask = bytearray([UNKNOWN] * 4)
+        Solver().check_spaces(
+            mask, Line(size=4, idx=4, blocks=[Block(start=0, end=3, length=0)]))
+        self.assertEqual(bytearray([WHITE] * 4), mask)
+
+        # start of the first block > 0 (1)
+        mask = bytearray([UNKNOWN] * 4)
+        Solver().check_spaces(
+            mask, Line(size=4, idx=0, blocks=[Block(start=1, end=3, length=2)]))
+        self.assertEqual(bytearray([WHITE] + [UNKNOWN] * 3), mask)
+
+        # end of the last block < size - 1 (2)
+        mask = bytearray([UNKNOWN] * 6)
+        Solver().check_spaces(
+            mask, Line(size=6, idx=0, blocks=[Block(start=0, end=4, length=2), Block(start=3, end=4, length=1)]))
+        self.assertEqual(bytearray([UNKNOWN] * 5 + [WHITE]), mask)
+
+        # gap betwen the end and start of two subsequent blocks (3)
+        mask = bytearray([UNKNOWN] * 7)
+        Solver().check_spaces(
+            mask, Line(size=7, idx=0, blocks=[Block(start=0, end=2, length=2), Block(start=4, end=6, length=1)]))
+        self.assertEqual(
+            bytearray([UNKNOWN] * 3 + [WHITE] + [UNKNOWN] * 3),
+            mask)
+
+        # no gap as they're joint subsequent blocks
+        mask = bytearray([UNKNOWN] * 7)
+        Solver().check_spaces(
+            mask, Line(size=7, idx=0, blocks=[Block(start=0, end=3, length=2), Block(start=4, end=6, length=1)]))
+        self.assertEqual(bytearray([UNKNOWN] * 7), mask)
 
 
 if __name__ == '__main__':
