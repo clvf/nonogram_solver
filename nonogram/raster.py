@@ -116,12 +116,8 @@ class Raster(object):
 
             if rec[i] != UNKNOWN and mask[i] != UNKNOWN \
                     and rec[i] != mask[i]:
-                raise DiscrepancyInModel("CURRENT: {!s} NEW: {!s}".format(original, mask))
-
-        if modified_cells and __debug__:
-            pass
-            #logging.debug("UPDATE: " + str(mask) + "\n")
-            #logging.debug(str(self))
+                raise DiscrepancyInModel(
+                    "CURRENT: {!s} NEW: {!s}".format(original, mask))
 
         return rec, modified_cells
 
@@ -141,6 +137,6 @@ class Raster(object):
 
 #    def clone(self):
 #        table_copy = copy.deepcopy(self.table)
-#        # row_meta_copy = [m.clone() for m in self.row_meta]
-#        # col_meta_copy = [m.clone() for m in self.col_meta]
+# row_meta_copy = [m.clone() for m in self.row_meta]
+# col_meta_copy = [m.clone() for m in self.col_meta]
 #        return Raster(table=table_copy)

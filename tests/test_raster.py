@@ -121,15 +121,16 @@ class TestRaster(unittest.TestCase):
 
     def test_update_list(self):
         raster = Raster(table=[[]], row_meta=[], col_meta=[])
-        rec = bytearray((BLACK,UNKNOWN,WHITE,UNKNOWN))
-        mask = bytearray((UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN))
+        rec = bytearray((BLACK, UNKNOWN, WHITE, UNKNOWN))
+        mask = bytearray((UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN))
 
         # as mask is full with unknown, no change should be made
         self.assertEqual((rec, []), raster._update_list(rec, mask))
 
-        mask = bytearray((UNKNOWN,WHITE,WHITE,BLACK))
+        mask = bytearray((UNKNOWN, WHITE, WHITE, BLACK))
         # change some cells and return their indexes
-        self.assertEqual((bytearray((BLACK,WHITE,WHITE,BLACK)), [1, 3]), raster._update_list(rec, mask))
+        self.assertEqual(
+            (bytearray((BLACK, WHITE, WHITE, BLACK)), [1, 3]), raster._update_list(rec, mask))
 
         # if rec and mask differ in "known" cells that's a discrepancy
         mask[0] = WHITE

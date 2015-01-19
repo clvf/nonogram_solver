@@ -2,10 +2,11 @@
 Implementation of the logic to solve the nonogram.
 """
 
-from .solution import Solution
 from .raster import BLACK
 from .raster import UNKNOWN
 from .raster import WHITE
+from .solution import Solution
+import logging
 
 
 # class FoundSolution(Exception):
@@ -42,7 +43,6 @@ class Solver(object):
                 if raster.update_col(mask=mask, idx=meta.idx):
                     cells_changed = True
 
-        print(Solution(raster.table))
         if raster.is_solved():
             return Solution(raster.table)
 
@@ -60,8 +60,8 @@ class Solver(object):
         if UNKNOWN not in mask:
             return
 
-        if __debug__:
-            print("R 1.1%fill_intersections: {!s}".format(mask))
+        debug_prefix = "R 1.1%fill_intersections: {!s} -> ".format(mask)
+        debug_suffix = ", {!s}".format(meta)
 
         for block in meta.blocks:
             u = (block.end - block.start + 1) - block.length
@@ -71,3 +71,4 @@ class Solver(object):
             ub = block.end - u + 1  # upper bound
             if lb < ub:
                 mask[lb:ub] = [BLACK] * (ub - lb)
+        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
