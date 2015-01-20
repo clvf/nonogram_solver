@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from copy import copy
 import logging
 import os
 import sys
@@ -16,6 +17,7 @@ from nonogram.line import Line
 from nonogram.raster import Raster
 from nonogram.row import Row
 from nonogram.solver import Solver
+from nonogram.solution import Solution
 
 from nonogram.raster import BLACK
 from nonogram.raster import UNKNOWN
@@ -42,6 +44,7 @@ class TestSolver(unittest.TestCase):
         raster_internals = Raster.parse_metadata(spec)
         raster = Raster(**raster_internals)
         Solver().solve(raster)
+        print(Solution(raster.table))
 
     def test_fill_intersections(self):
         # if the line is solved (no UNKNOWN) then there's nothing to do...
@@ -75,6 +78,10 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(bytearray([UNKNOWN] * 5), mask)
 
     def test_check_spaces(self):
+        # if the line is solved (no UNKNOWN) then there's nothing to do...
+        self.assertIsNone(Solver().check_spaces(bytearray([BLACK, WHITE, BLACK]),
+                                                Line(0, 0, [])))
+
         # if there's no black run at all...
         mask = bytearray([UNKNOWN] * 4)
         Solver().check_spaces(mask, Line(size=4, idx=4, blocks=[]))
@@ -110,6 +117,96 @@ class TestSolver(unittest.TestCase):
         Solver().check_spaces(
             mask, Line(size=7, idx=0, blocks=[Block(start=0, end=3, length=2), Block(start=4, end=6, length=1)]))
         self.assertEqual(bytearray([UNKNOWN] * 7), mask)
+
+    def test_mark_white_cell_at_boundary(self):
+        # if the line is solved (no UNKNOWN) then there's nothing to do...
+        self.assertIsNone(Solver().mark_white_cell_at_boundary(
+            bytearray([BLACK, WHITE, BLACK]),
+            Line(0, 0, [])))
+
+        # START
+        blocks = [Block(start=1, end=8, length=4),
+                  Block(start=5, end=8, length=2),
+                  Block(start=3, end=8, length=1),
+                  Block(start=0, end=8, length=1)]
+        mask = bytearray([UNKNOWN] * 5 + [BLACK] + [UNKNOWN] * 3)
+        expected = copy(mask)
+        # no change as not all covering block has len 1
+        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected,mask)
+
+        blocks = blocks[1:]
+        # change mask at index 4 as all covering block has len 1
+        expected = bytearray([UNKNOWN] * 4 + [WHITE] + [BLACK] + [UNKNOWN] * 3)
+        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected,mask)
+
+        # no change as mask at index 5 is not black
+        mask = bytearray([UNKNOWN] * 9)
+        expected = copy(mask)
+        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected,mask)
+
+        # if start index == 0 then nothing should be done obviously
+        blocks = [Block(start=0, end=4, length=2),
+                  Block(start=0, end=8, length=1),
+                  Block(start=0, end=3, length=1)]
+        mask = bytearray([BLACK] + [UNKNOWN] * 8)
+        expected = copy(mask)
+        # no change as not all covering block has len 1
+        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected,mask)
+
+        # END
+        blocks = [Block(start=1, end=8, length=4),
+                  Block(start=5, end=7, length=2),
+                  Block(start=3, end=8, length=1),
+                  Block(start=3, end=7, length=1)]
+        mask = bytearray([UNKNOWN] * 7 + [BLACK] + [UNKNOWN])
+        expected = copy(mask)
+        # no change as not all covering block has len 1
+        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected,mask)
+
+        blocks = blocks[1:]
+        # change mask at index 8 as all covering block has len 1
+        expected = bytearray([UNKNOWN] * 7 + [BLACK, WHITE])
+        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected,mask)
+
+        # no change as mask at index 7 is not black
+        mask = bytearray([UNKNOWN] * 9)
+        expected = copy(mask)
+        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected,mask)
+
+        # if end index == last index then nothing should be done obviously
+        blocks = [Block(start=5, end=8, length=2),
+                  Block(start=3, end=8, length=1),
+                  Block(start=3, end=7, length=1)]
+        mask = bytearray([UNKNOWN] * 8 + [BLACK])
+        expected = copy(mask)
+        # no change as not all covering block has len 1
+        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected,mask)
+
+
+    def test_covering_blocks(self):
+        blocks = [Block(start=1, end=10, length=4),
+                  Block(start=6, end=9, length=4),
+                  Block(start=3, end=7, length=4),
+                  Block(start=2, end=4, length=4)]
+
+        covering_blocks = Solver()._covering_blocks(blocks, start=2)
+        self.assertEqual([Block(start=1, end=10, length=4),
+                          Block(start=2, end=4, length=4)], covering_blocks)
+
+        covering_blocks = Solver()._covering_blocks(blocks, start=3, end=5)
+        self.assertEqual([Block(start=1, end=10, length=4),
+                          Block(start=3, end=7, length=4)], covering_blocks)
+
+        covering_blocks = Solver()._covering_blocks(blocks, start=0)
+        self.assertEqual([], covering_blocks)
 
 
 if __name__ == '__main__':

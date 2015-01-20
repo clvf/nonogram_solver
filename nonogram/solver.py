@@ -30,9 +30,7 @@ class Solver(object):
             for meta in raster.row_meta:
                 mask = raster.get_row(meta.idx)
 
-                self.fill_intersections(mask, meta)
-                self.check_spaces(mask, meta)
-                self.mark_white_cell_at_boundary(mask, meta)
+                self.linesolve(mask, meta)
 
                 if raster.update_row(mask=mask, idx=meta.idx):
                     cells_changed = True
@@ -40,9 +38,7 @@ class Solver(object):
             for meta in raster.col_meta:
                 mask = raster.get_col(meta.idx)
 
-                self.fill_intersections(mask, meta)
-                self.check_spaces(mask, meta)
-                self.mark_white_cell_at_boundary(mask, meta)
+                self.linesolve(mask, meta)
 
                 if raster.update_col(mask=mask, idx=meta.idx):
                     cells_changed = True
@@ -51,6 +47,12 @@ class Solver(object):
             return Solution(raster.table)
 
         return None
+
+    def linesolve(self, mask, meta):
+        """Rule based elimination on the received parameters."""
+        self.fill_intersections(mask, meta)
+        self.check_spaces(mask, meta)
+        self.mark_white_cell_at_boundary(mask, meta)
 
     def fill_intersections(self, mask, meta):
         """Rule 1.1:
