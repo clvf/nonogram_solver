@@ -79,8 +79,9 @@ class TestSolver(unittest.TestCase):
 
     def test_check_spaces(self):
         # if the line is solved (no UNKNOWN) then there's nothing to do...
-        self.assertIsNone(Solver().check_spaces(bytearray([BLACK, WHITE, BLACK]),
-                                                Line(0, 0, [])))
+        self.assertIsNone(
+            Solver().check_spaces(bytearray([BLACK, WHITE, BLACK]),
+                                  Line(0, 0, [])))
 
         # if there's no black run at all...
         mask = bytearray([UNKNOWN] * 4)
@@ -132,20 +133,23 @@ class TestSolver(unittest.TestCase):
         mask = bytearray([UNKNOWN] * 5 + [BLACK] + [UNKNOWN] * 3)
         expected = copy(mask)
         # no change as not all covering block has len 1
-        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
-        self.assertEqual(expected,mask)
+        Solver().mark_white_cell_at_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
 
         blocks = blocks[1:]
         # change mask at index 4 as all covering block has len 1
         expected = bytearray([UNKNOWN] * 4 + [WHITE] + [BLACK] + [UNKNOWN] * 3)
-        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
-        self.assertEqual(expected,mask)
+        Solver().mark_white_cell_at_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
 
         # no change as mask at index 5 is not black
         mask = bytearray([UNKNOWN] * 9)
         expected = copy(mask)
-        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
-        self.assertEqual(expected,mask)
+        Solver().mark_white_cell_at_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
 
         # if start index == 0 then nothing should be done obviously
         blocks = [Block(start=0, end=4, length=2),
@@ -154,8 +158,9 @@ class TestSolver(unittest.TestCase):
         mask = bytearray([BLACK] + [UNKNOWN] * 8)
         expected = copy(mask)
         # no change as not all covering block has len 1
-        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
-        self.assertEqual(expected,mask)
+        Solver().mark_white_cell_at_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
 
         # END
         blocks = [Block(start=1, end=8, length=4),
@@ -165,20 +170,23 @@ class TestSolver(unittest.TestCase):
         mask = bytearray([UNKNOWN] * 7 + [BLACK] + [UNKNOWN])
         expected = copy(mask)
         # no change as not all covering block has len 1
-        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
-        self.assertEqual(expected,mask)
+        Solver().mark_white_cell_at_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
 
         blocks = blocks[1:]
         # change mask at index 8 as all covering block has len 1
         expected = bytearray([UNKNOWN] * 7 + [BLACK, WHITE])
-        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
-        self.assertEqual(expected,mask)
+        Solver().mark_white_cell_at_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
 
         # no change as mask at index 7 is not black
         mask = bytearray([UNKNOWN] * 9)
         expected = copy(mask)
-        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
-        self.assertEqual(expected,mask)
+        Solver().mark_white_cell_at_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
 
         # if end index == last index then nothing should be done obviously
         blocks = [Block(start=5, end=8, length=2),
@@ -187,9 +195,9 @@ class TestSolver(unittest.TestCase):
         mask = bytearray([UNKNOWN] * 8 + [BLACK])
         expected = copy(mask)
         # no change as not all covering block has len 1
-        Solver().mark_white_cell_at_boundary(mask, Line(size=9, idx=0, blocks=blocks))
-        self.assertEqual(expected,mask)
-
+        Solver().mark_white_cell_at_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
 
     def test_covering_blocks(self):
         blocks = [Block(start=1, end=10, length=4),
@@ -207,6 +215,53 @@ class TestSolver(unittest.TestCase):
 
         covering_blocks = Solver()._covering_blocks(blocks, start=0)
         self.assertEqual([], covering_blocks)
+
+    def test_get_black_runs(self):
+        # mask = bytearray(map(ord, 'X.X  ..X..X. .X'))
+        mask = bytearray(
+            [BLACK, UNKNOWN, BLACK, WHITE, WHITE, UNKNOWN, UNKNOWN,
+             BLACK, UNKNOWN, UNKNOWN, BLACK, UNKNOWN, WHITE, UNKNOWN, BLACK])
+        expected = [Block(start=0, end=0, length=1),
+                    Block(start=2, end=2, length=1),
+                    Block(start=7, end=7, length=1),
+                    Block(start=10, end=10, length=1),
+                    Block(start=14, end=14, length=1)]
+
+        self.assertEqual(expected, Solver()._get_black_runs(mask))
+
+        mask = bytearray(
+            [UNKNOWN,
+             BLACK,
+             BLACK,
+             WHITE,
+             UNKNOWN,
+             WHITE,
+             UNKNOWN,
+             UNKNOWN,
+             BLACK,
+             BLACK])
+        expected = [Block(start=1, end=2, length=2),
+                    Block(start=8, end=9, length=2)]
+        self.assertEqual(expected, Solver()._get_black_runs(mask))
+
+        mask = bytearray([BLACK, BLACK, BLACK, BLACK])
+        expected = [Block(start=0, end=3, length=4)]
+        self.assertEqual(expected, Solver()._get_black_runs(mask))
+
+        mask = bytearray([WHITE, UNKNOWN, UNKNOWN, WHITE])
+        self.assertEqual([], Solver()._get_black_runs(mask))
+
+        mask = bytearray(
+            [BLACK,
+             WHITE,
+             BLACK,
+             WHITE] + [BLACK] * 4 + [UNKNOWN,
+                                     BLACK])
+        expected = [Block(start=0, end=0, length=1),
+                    Block(start=2, end=2, length=1),
+                    Block(start=4, end=7, length=4),
+                    Block(start=9, end=9, length=1)]
+        self.assertEqual(expected, Solver()._get_black_runs(mask))
 
 
 if __name__ == '__main__':
