@@ -2,8 +2,9 @@
 Class representing the solution of a puzzle.
 """
 
-import struct
 from .commonequality import CommonEquality
+import .raster
+import struct
 
 # Globals
 WHITE = (255, 255, 255)
@@ -62,8 +63,7 @@ class Solution(CommonEquality):
         y = 0
         for line in self.table.splitlines():
             for x in range(self.width):
-                # TODO: Raster.BLACK: 88
-                if line[x] == 88:
+                if line[x] == raster.BLACK:
                     start_idx = (y * rowsize) + x * color_depth
                     try:
                         pixel_array[start_idx: start_idx + color_depth] = BLACK
