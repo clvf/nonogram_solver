@@ -263,6 +263,71 @@ class TestSolver(unittest.TestCase):
                     Block(start=9, end=9, length=1)]
         self.assertEqual(expected, Solver()._get_black_runs(mask))
 
+    def test_fill_cells_based_on_boundary(self):
+        # if the line is solved (no UNKNOWN) then there's nothing to do...
+        self.assertIsNone(Solver().fill_cells_based_on_boundary(
+            bytearray([BLACK, WHITE, BLACK]),
+            Line(0, 0, [])))
+
+        # fill one cell on the right
+        blocks = [Block(start=0, end=7, length=3),
+                  Block(start=4, end=12, length=4)]
+        mask = bytearray([UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] + [UNKNOWN] * 7)
+        expected = bytearray([UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] *2 + [UNKNOWN] * 6)
+
+        Solver().fill_cells_based_on_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
+
+        # fill one cell on the left
+        blocks = [Block(start=5, end=12, length=3),
+                  Block(start=0, end=8, length=4)]
+        mask = bytearray([UNKNOWN] * 7 + [BLACK] + [UNKNOWN] + [WHITE] + [UNKNOWN] * 3)
+        expected = bytearray([UNKNOWN] * 6 + [BLACK] * 2 + [UNKNOWN] + [WHITE] + [UNKNOWN] * 3)
+
+        Solver().fill_cells_based_on_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
+
+        # fill one cell on the right boundary is the wall
+        blocks = [Block(start=0, end=3, length=3),
+                  Block(start=0, end=8, length=4)]
+        mask = bytearray([UNKNOWN] + [BLACK] + [UNKNOWN] * 7)
+        expected = bytearray([UNKNOWN] + [BLACK] *2 + [UNKNOWN] * 6)
+
+        Solver().fill_cells_based_on_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
+
+        # fill one cell on the left boundary is the wall
+        blocks = [Block(start=5, end=8, length=3),
+                  Block(start=0, end=8, length=4)]
+        mask = bytearray([UNKNOWN] * 7 + [BLACK] + [UNKNOWN])
+        expected = bytearray([UNKNOWN] * 6 + [BLACK] * 2 + [UNKNOWN])
+
+        Solver().fill_cells_based_on_boundary(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
+
+    def test_mark_boundary_if_possible(self):
+        # if the line is solved (no UNKNOWN) then there's nothing to do...
+        self.assertIsNone(Solver().mark_boundary_if_possible(
+            bytearray([BLACK, WHITE, BLACK]),
+            Line(0, 0, [])))
+
+        # fill one cell on the right
+        blocks = [Block(start=0, end=3, length=1),
+                  Block(start=2, end=6, length=2),
+                  Block(start=5, end=9, length=2),
+                  Block(start=8, end=13, length=3) ]
+        mask = bytearray([UNKNOWN] * 5 + [BLACK] * 2 + [UNKNOWN] * 7)
+        expected = bytearray([UNKNOWN] * 4 + [WHITE] + [BLACK] * 2 + [WHITE] + [UNKNOWN] * 6)
+
+        Solver().mark_boundary_if_possible(
+            mask, Line(size=9, idx=0, blocks=blocks))
+        self.assertEqual(expected, mask)
+
+
 
 if __name__ == '__main__':
     unittest.main()

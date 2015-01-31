@@ -3,7 +3,7 @@ Class representing the solution of a puzzle.
 """
 
 from .commonequality import CommonEquality
-import .raster
+# import .raster
 import struct
 
 # Globals

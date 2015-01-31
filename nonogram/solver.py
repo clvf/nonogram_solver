@@ -46,6 +46,8 @@ class Solver(object):
         self.check_spaces(mask, meta)
         self.mark_white_cell_at_boundary(mask, meta)
         self.mark_white_cell_bween_sgmts(mask, meta)
+        self.fill_cells_based_on_boundary(mask, meta)
+        self.mark_boundary_if_possible(mask, meta)
 
     def fill_intersections(self, mask, meta):
         """Rule 1.1:
@@ -216,3 +218,96 @@ class Solver(object):
                 start += 1
 
         return res
+
+    def fill_cells_based_on_boundary(self, mask, meta):
+        """Rule 1.5
+
+        For any two consecutive cells ci-1 and ci, i = 1,...,n-1. Constraint:
+        cell ci-1 must be empty or unknown and cell ci must be black.
+        (1) Let minL be the minimal length of all black runs covering ci.
+        (2) Find an empty cell cm closest to ci, i-minL+1 <= m <= i-1. If cm
+        exists, color each cell cp where i+1 <= p <= m+minL
+        (3) Find an empty cell cn closest to ci, i+1 <= n <= i+minL-1. If cn
+        exists, color each cell cp where n-minL <= p <= i-1
+        """
+        # return if this line already "solved" completely
+        if UNKNOWN not in mask:
+            return
+
+        debug_prefix = "R1.5 fill_cells_based_on_boundary: {!s} -> ".format(
+            mask)
+        debug_suffix = ", {!s}".format(meta)
+
+        for i in range(1, len(mask) - 1):
+            covering_blocks = self._covering_blocks(meta.blocks, i)
+            minL = min([block.length for block in covering_blocks])
+
+            found_empty = 0
+            m, n = -1, -1
+            if minL > 0 and mask[i - 1] != BLACK and mask[i] == BLACK:
+                # search for an emtpy cell "to the left" from ci
+                for m in range(i - 1, max(i - minL, -1), -1):
+                    if mask[m] == WHITE:
+                        found_empty = 1
+                        break
+
+                lower_bound = i + 1
+                upper_bound = m + minL + 1 if found_empty else minL
+
+                # if an empty cell is found or we reached the wall and the
+                # lower bound is less than the upper bound
+                if (found_empty or m == 0) and lower_bound < upper_bound:
+                    mask[lower_bound:upper_bound] = [
+                        BLACK] * (upper_bound - lower_bound)
+
+            found_empty = 0
+            if minL > 0 and mask[i + 1] != BLACK and mask[i] == BLACK:
+                # search for an emtpy cell "to the right" from ci
+                for n in range(i + 1, min(i + minL, len(mask))):
+                    if mask[n] == WHITE:
+                        found_empty = 1
+                        break
+
+                lower_bound = n - minL if found_empty else len(mask) - minL
+                upper_bound = i
+
+                # if an empty cell is found or we reached the wall and the
+                # lower bound is less than the upper bound
+                if (found_empty or n == len(mask) - 1) and lower_bound < upper_bound:
+                    mask[lower_bound:upper_bound] = [
+                        BLACK] * (upper_bound - lower_bound)
+
+        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
+
+    def mark_boundary_if_possible(self, mask, meta):
+        """Rule 1.5:
+
+        If all black runs covering ci have the same length as that of the
+        block segment containing ci.
+        (1) Let s and e be the start and end indices of the black segment
+            containing ci
+        (2) Leave cells c.s-1 and c.e+1 empty
+        """
+        # return if this line already "solved" completely
+        if UNKNOWN not in mask:
+            return
+
+        debug_prefix = "R1.5 mark_boundary_if_possible: {!s} -> ".format(mask)
+        debug_suffix = ", {!s}".format(meta)
+
+        for block in self._get_black_runs(mask):
+            covering_blocks = self._covering_blocks(
+                meta.blocks, block.start, block.end)
+
+            same_length = 1
+            for cov in covering_blocks:
+                if cov.length != block.length:
+                    same_length = 0
+
+            if same_length and len(covering_blocks) > 0:
+                if block.start > 0:
+                    mask[block.start - 1] = WHITE
+                if block.end < len(mask) - 1:
+                    mask[block.end + 1] = WHITE
+
+        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
