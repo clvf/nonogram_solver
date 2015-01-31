@@ -49,6 +49,8 @@ class Solver(object):
         self.fill_cells_based_on_boundary(mask, meta)
         self.mark_boundary_if_possible(mask, meta)
 
+        self.check_meta_consistency(meta)
+
     def fill_intersections(self, mask, meta):
         """Rule 1.1:
 
@@ -311,3 +313,31 @@ class Solver(object):
                     mask[block.end + 1] = WHITE
 
         logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
+
+    def check_meta_consistency(self, meta):
+        """Rule 2.1:
+
+        For each black run j, set
+        rj.s = (r(j-1).s + LB(j-1) +1), if rj.s < r(j-1).s + LB(j-1) +1
+        rj.e = (r(j+1).e - LB(j+1) -1), if rj.e > r(j+1).e - LB(j+1) -1
+        """
+
+        debug_prefix = "R2.1 check_meta_consistency: {!s} -> ".format(meta)
+
+        # check lower bound
+        for j in range(len(meta.blocks) - 1):
+            act = meta.blocks[j]
+            next_ = meta.blocks[j + 1]
+            earliest_start = act.start + act.length + 1
+            if next_.start < earliest_start:
+                next_.start = earliest_start
+
+        # check upper bound
+        for j in range(len(meta.blocks) - 2, -1, -1):
+            act = meta.blocks[j]
+            prev = meta.blocks[j + 1]
+            latest_finish = prev.end - prev.length - 1
+            if act.end > latest_finish:
+                act.end = latest_finish
+
+        logging.debug(debug_prefix + "{!s}".format(meta))

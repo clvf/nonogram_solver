@@ -43,8 +43,8 @@ class TestSolver(unittest.TestCase):
 1""".split("\n")
         raster_internals = Raster.parse_metadata(spec)
         raster = Raster(**raster_internals)
-        Solver().solve(raster)
-        print(Solution(raster.table))
+        # Solver().solve(raster)
+        # print(Solution(raster.table))
 
     def test_fill_intersections(self):
         # if the line is solved (no UNKNOWN) then there's nothing to do...
@@ -272,8 +272,10 @@ class TestSolver(unittest.TestCase):
         # fill one cell on the right
         blocks = [Block(start=0, end=7, length=3),
                   Block(start=4, end=12, length=4)]
-        mask = bytearray([UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] + [UNKNOWN] * 7)
-        expected = bytearray([UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] *2 + [UNKNOWN] * 6)
+        mask = bytearray(
+            [UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] + [UNKNOWN] * 7)
+        expected = bytearray(
+            [UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] * 2 + [UNKNOWN] * 6)
 
         Solver().fill_cells_based_on_boundary(
             mask, Line(size=9, idx=0, blocks=blocks))
@@ -282,8 +284,10 @@ class TestSolver(unittest.TestCase):
         # fill one cell on the left
         blocks = [Block(start=5, end=12, length=3),
                   Block(start=0, end=8, length=4)]
-        mask = bytearray([UNKNOWN] * 7 + [BLACK] + [UNKNOWN] + [WHITE] + [UNKNOWN] * 3)
-        expected = bytearray([UNKNOWN] * 6 + [BLACK] * 2 + [UNKNOWN] + [WHITE] + [UNKNOWN] * 3)
+        mask = bytearray(
+            [UNKNOWN] * 7 + [BLACK] + [UNKNOWN] + [WHITE] + [UNKNOWN] * 3)
+        expected = bytearray(
+            [UNKNOWN] * 6 + [BLACK] * 2 + [UNKNOWN] + [WHITE] + [UNKNOWN] * 3)
 
         Solver().fill_cells_based_on_boundary(
             mask, Line(size=9, idx=0, blocks=blocks))
@@ -293,7 +297,7 @@ class TestSolver(unittest.TestCase):
         blocks = [Block(start=0, end=3, length=3),
                   Block(start=0, end=8, length=4)]
         mask = bytearray([UNKNOWN] + [BLACK] + [UNKNOWN] * 7)
-        expected = bytearray([UNKNOWN] + [BLACK] *2 + [UNKNOWN] * 6)
+        expected = bytearray([UNKNOWN] + [BLACK] * 2 + [UNKNOWN] * 6)
 
         Solver().fill_cells_based_on_boundary(
             mask, Line(size=9, idx=0, blocks=blocks))
@@ -319,14 +323,39 @@ class TestSolver(unittest.TestCase):
         blocks = [Block(start=0, end=3, length=1),
                   Block(start=2, end=6, length=2),
                   Block(start=5, end=9, length=2),
-                  Block(start=8, end=13, length=3) ]
+                  Block(start=8, end=13, length=3)]
         mask = bytearray([UNKNOWN] * 5 + [BLACK] * 2 + [UNKNOWN] * 7)
-        expected = bytearray([UNKNOWN] * 4 + [WHITE] + [BLACK] * 2 + [WHITE] + [UNKNOWN] * 6)
+        expected = bytearray(
+            [UNKNOWN] * 4 + [WHITE] + [BLACK] * 2 + [WHITE] + [UNKNOWN] * 6)
 
         Solver().mark_boundary_if_possible(
             mask, Line(size=9, idx=0, blocks=blocks))
         self.assertEqual(expected, mask)
 
+    def test_check_meta_consistency(self):
+        meta = Line(size=10, idx=0, blocks=[Block(start=0, end=9, length=2),
+                                            Block(start=0, end=9, length=3), Block(start=0, end=9, length=1)])
+
+        expected = Line(
+            size=10, idx=0, blocks=[Block(start=0, end=3, length=2),
+                                    Block(start=3, end=7, length=3), Block(start=7, end=9, length=1)])
+
+        Solver().check_meta_consistency(meta)
+        self.assertEqual(expected, meta)
+
+        meta = Line(size=10, idx=0, blocks=[Block(start=0, end=9, length=2)])
+        expected = copy(meta)
+        Solver().check_meta_consistency(meta)
+        self.assertEqual(expected, meta)
+
+        meta = Line(size=10, idx=0, blocks=[Block(start=0, end=7, length=2),
+                                            Block(start=2, end=8, length=3), Block(start=6, end=9, length=1)])
+        expected = Line(
+            size=10, idx=0, blocks=[Block(start=0, end=3, length=2),
+                                    Block(start=3, end=7, length=3), Block(start=7, end=9, length=1)])
+
+        Solver().check_meta_consistency(meta)
+        self.assertEqual(expected, meta)
 
 
 if __name__ == '__main__':
