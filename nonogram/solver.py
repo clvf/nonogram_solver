@@ -7,8 +7,28 @@ from .raster import BLACK
 from .raster import UNKNOWN
 from .raster import WHITE
 from .solution import Solution
+import copy
 import logging
 
+def log_changes(rule):
+    """
+    Decorator that logs the "trace" of the processing only if the wrapped
+    function changed either the mask or the meta data.
+    """
+    def wrap(f):
+        def wrapped_f(*args):
+            mask = args[1]
+            meta = args[2]
+            orig_mask = copy.deepcopy(mask)
+            orig_meta = copy.deepcopy(meta)
+            f(*args)
+
+            if mask != orig_mask:
+                logging.debug("{} {}: {!s} -> {!s} {!s}".format(rule, f.__name__, orig_mask, mask, meta))
+            if meta != orig_meta:
+                logging.debug("{} {}: {!s} -> {!s}".format(rule, f.__name__, orig_meta, meta))
+        return wrapped_f
+    return wrap
 
 class Solver(object):
 
@@ -49,8 +69,11 @@ class Solver(object):
         self.fill_cells_based_on_boundary(mask, meta)
         self.mark_boundary_if_possible(mask, meta)
 
-        self.check_meta_consistency(meta)
+        # Rules 2.*
+        self.check_meta_consistency(None, meta)
+        self.look_for_trailing_white_cell(mask, meta)
 
+    @log_changes("R1.1")
     def fill_intersections(self, mask, meta):
         """Rule 1.1:
 
@@ -63,9 +86,6 @@ class Solver(object):
         if UNKNOWN not in mask:
             return
 
-        debug_prefix = "R1.1 fill_intersections: {!s} -> ".format(mask)
-        debug_suffix = ", {!s}".format(meta)
-
         for block in meta.blocks:
             u = (block.end - block.start + 1) - block.length
             assert u >= 0, "u: " + str(u) + " blk: " + str(block)
@@ -74,8 +94,8 @@ class Solver(object):
             ub = block.end - u + 1  # upper bound
             if lb < ub:
                 mask[lb:ub] = [BLACK] * (ub - lb)
-        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
 
+    @log_changes("R1.2")
     def check_spaces(self, mask, meta):
         """Rule 1.2:
         When a cell does not belong to the run range of any black run, the
@@ -90,9 +110,6 @@ class Solver(object):
         # return if this line already "solved" completely
         if UNKNOWN not in mask:
             return
-
-        debug_prefix = "R1.2 check_spaces: {!s} -> ".format(mask)
-        debug_suffix = ", {!s}".format(meta)
 
         # if there are no black runs in the row/col at all...
         if len(meta.blocks) == 0 or meta.blocks[0].length == 0:
@@ -109,8 +126,7 @@ class Solver(object):
                 for i in range(meta.blocks[j].end + 1, meta.blocks[j + 1].start):
                     mask[i] = WHITE
 
-        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
-
+    @log_changes("R1.3")
     def mark_white_cell_at_boundary(self, mask, meta):
         """Rule 1.3:
 
@@ -123,10 +139,6 @@ class Solver(object):
         # return if this line already "solved" completely
         if UNKNOWN not in mask:
             return
-
-        debug_prefix = "R1.3 mark_white_cell_at_boundary: {!s} -> ".format(
-            mask)
-        debug_suffix = ", {!s}".format(meta)
 
         for idx in range(len(meta.blocks)):
             block = meta.blocks[idx]
@@ -151,8 +163,6 @@ class Solver(object):
                 if 1 == max([block.length for block in covering_blocks]):
                     mask[block.end + 1] = WHITE
 
-        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
-
     def _covering_blocks(self, blocks, start, end=None):
         """Returns the blocks that includes the [start:end] portion."""
         if end is None:
@@ -161,6 +171,7 @@ class Solver(object):
         return [block for block in blocks
                 if block.start <= start and block.end >= end]
 
+    @log_changes("R1.4")
     def mark_white_cell_bween_sgmts(self, mask, meta):
         """Rule 1.4
 
@@ -173,10 +184,6 @@ class Solver(object):
         # return if this line already "solved" completely
         if UNKNOWN not in mask:
             return
-
-        debug_prefix = "R1.4 mark_white_cell_bween_sgmts: {!s} -> ".format(
-            mask)
-        debug_suffix = ", {!s}".format(meta)
 
         black_runs = self._get_black_runs(mask)
 
@@ -193,8 +200,6 @@ class Solver(object):
                     if covering_max_len < black_runs[i].length + \
                             black_runs[i + 1].length + 1:
                         mask[black_runs[i].end + 1] = WHITE
-
-        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
 
     def _get_black_runs(self, mask):
         """Returns those runs start and end indices that don't contain any
@@ -221,6 +226,7 @@ class Solver(object):
 
         return res
 
+    @log_changes("R1.5")
     def fill_cells_based_on_boundary(self, mask, meta):
         """Rule 1.5
 
@@ -235,10 +241,6 @@ class Solver(object):
         # return if this line already "solved" completely
         if UNKNOWN not in mask:
             return
-
-        debug_prefix = "R1.5 fill_cells_based_on_boundary: {!s} -> ".format(
-            mask)
-        debug_suffix = ", {!s}".format(meta)
 
         for i in range(1, len(mask) - 1):
             covering_blocks = self._covering_blocks(meta.blocks, i)
@@ -279,8 +281,7 @@ class Solver(object):
                     mask[lower_bound:upper_bound] = [
                         BLACK] * (upper_bound - lower_bound)
 
-        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
-
+    @log_changes("R1.5")
     def mark_boundary_if_possible(self, mask, meta):
         """Rule 1.5:
 
@@ -293,9 +294,6 @@ class Solver(object):
         # return if this line already "solved" completely
         if UNKNOWN not in mask:
             return
-
-        debug_prefix = "R1.5 mark_boundary_if_possible: {!s} -> ".format(mask)
-        debug_suffix = ", {!s}".format(meta)
 
         for block in self._get_black_runs(mask):
             covering_blocks = self._covering_blocks(
@@ -312,17 +310,14 @@ class Solver(object):
                 if block.end < len(mask) - 1:
                     mask[block.end + 1] = WHITE
 
-        logging.debug(debug_prefix + "{!s}".format(mask) + debug_suffix)
-
-    def check_meta_consistency(self, meta):
+    @log_changes("R2.1")
+    def check_meta_consistency(self, mask, meta):
         """Rule 2.1:
 
         For each black run j, set
         rj.s = (r(j-1).s + LB(j-1) +1), if rj.s < r(j-1).s + LB(j-1) +1
         rj.e = (r(j+1).e - LB(j+1) -1), if rj.e > r(j+1).e - LB(j+1) -1
         """
-
-        debug_prefix = "R2.1 check_meta_consistency: {!s} -> ".format(meta)
 
         # check lower bound
         for j in range(len(meta.blocks) - 1):
@@ -340,4 +335,19 @@ class Solver(object):
             if act.end > latest_finish:
                 act.end = latest_finish
 
-        logging.debug(debug_prefix + "{!s}".format(meta))
+    @log_changes("R2.2")
+    def look_for_trailing_white_cell(self, mask, meta):
+        """Rule 2.2:
+
+        rj.s = (rj.s + 1), if cell rj.s−1 is colored
+        rj.e = (rj.e − 1), if cell rj.e+1 is colored
+        """
+        return
+        # XXX buggy, don't use the code below
+        for j in range(len(meta.blocks)):
+            block = meta.blocks[j]
+            if block.start - 1 >= 0 and mask[block.start - 1] == BLACK:
+                block.start += 1
+
+            if block.end + 1 < len(mask) and mask[block.end + 1] == BLACK:
+                block.end -= 1

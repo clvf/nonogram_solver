@@ -1,5 +1,5 @@
 """
-Class incorporating the information that we know of a row or column.
+Class incorporating the meta information that we know of a row or column.
 """
 
 from .commonequality import CommonEquality

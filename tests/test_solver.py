@@ -357,6 +357,9 @@ class TestSolver(unittest.TestCase):
         Solver().check_meta_consistency(meta)
         self.assertEqual(expected, meta)
 
+    def test_look_for_trailing_white_cell(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()
