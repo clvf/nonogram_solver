@@ -33,7 +33,9 @@ def main(args=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Solve nonograms')
     parser.add_argument('input_file', help='file specifying the nonogram')
-    parser.add_argument('--bmp-file', dest='bmp_file',
-                        help='write the solution to the specified file in BMP format')
+    parser.add_argument(
+        '--bmp-file',
+        dest='bmp_file',
+        help='write the solution to the specified file in BMP format')
 
     main(args=parser.parse_args())

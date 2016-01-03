@@ -10,9 +10,9 @@ from .column import Column
 from .discrepancyinmodel import DiscrepancyInModel
 from .row import Row
 
-BLACK = 88   # \x58: ascii 'X'
+BLACK = 88  # \x58: ascii 'X'
 UNKNOWN = 46  # \x2E: ascii '.'
-WHITE = 32   # \x20: ascii ' '
+WHITE = 32  # \x20: ascii ' '
 
 
 class Raster(object):
@@ -58,8 +58,7 @@ class Raster(object):
         for i in range(self.width):
             line = offset + "|" * i
             line += "+" + "-" * (self.width - 1 - i) + " "
-            line += "; ".join((str(block)
-                              for block in self.col_meta[i].blocks))
+            line += "; ".join((str(block) for block in self.col_meta[i].blocks))
             repr_ += line + "\n"
 
         header = offset
@@ -70,8 +69,7 @@ class Raster(object):
         for i in range(self.height):
             line = " " + str(i % 10) + " "
             line += self.table[i].decode('ascii') + " "
-            line += "; ".join((str(block)
-                              for block in self.row_meta[i].blocks))
+            line += "; ".join((str(block) for block in self.row_meta[i].blocks))
             repr_ += line + "\n"
 
         return repr_ + "\n"
@@ -113,8 +111,8 @@ class Raster(object):
 
             if rec[i] != UNKNOWN and mask[i] != UNKNOWN \
                     and rec[i] != mask[i]:
-                raise DiscrepancyInModel(
-                    "CURRENT: {!s} NEW: {!s}".format(original, mask))
+                raise DiscrepancyInModel("CURRENT: {!s} NEW: {!s}".format(
+                    original, mask))
 
         return rec, modified_cells
 

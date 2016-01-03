@@ -10,12 +10,15 @@ from .solution import Solution
 import copy
 import logging
 
+
 def log_changes(rule):
     """
     Decorator that logs the "trace" of the processing only if the wrapped
     function changed either the mask or the meta data.
     """
+
     def wrap(f):
+
         def wrapped_f(*args):
             mask = args[1]
             meta = args[2]
@@ -24,11 +27,16 @@ def log_changes(rule):
             f(*args)
 
             if mask != orig_mask:
-                logging.debug("{} {}: {!s} -> {!s} {!s}".format(rule, f.__name__, orig_mask, mask, meta))
+                logging.debug("{} {}: {!s} -> {!s} {!s}".format(
+                    rule, f.__name__, orig_mask, mask, meta))
             if meta != orig_meta:
-                logging.debug("{} {}: {!s} -> {!s}".format(rule, f.__name__, orig_meta, meta))
+                logging.debug("{} {}: {!s} -> {!s}".format(rule, f.__name__,
+                                                           orig_meta, meta))
+
         return wrapped_f
+
     return wrap
+
 
 class Solver(object):
 
@@ -37,7 +45,7 @@ class Solver(object):
         solution (object) if there's any and None otherwise."""
         logging.debug("\n=====\nRule Based Elimination:\n=====\n")
         cells_changed = True
-        while(cells_changed):
+        while (cells_changed):
             cells_changed = False
             for meta in raster.row_meta:
                 mask = raster.get_row(meta.idx)
@@ -123,7 +131,8 @@ class Solver(object):
                 mask[i] = WHITE
             # (3)
             for j in range(len(meta.blocks) - 1):
-                for i in range(meta.blocks[j].end + 1, meta.blocks[j + 1].start):
+                for i in range(meta.blocks[j].end + 1,
+                               meta.blocks[j + 1].start):
                     mask[i] = WHITE
 
     @log_changes("R1.3")
@@ -152,7 +161,8 @@ class Solver(object):
                 covering_blocks = self._covering_blocks(blocks_wo_this,
                                                         block.start)
 
-                if covering_blocks and 1 == max([block.length for block in covering_blocks]):
+                if covering_blocks and 1 == max([block.length
+                                                 for block in covering_blocks]):
                     mask[block.start - 1] = WHITE
 
             # if the end of the block is BLACK and the next cell is UNKNOWN
@@ -160,7 +170,8 @@ class Solver(object):
                mask[block.end + 1] == UNKNOWN:
                 covering_blocks = self._covering_blocks(blocks_wo_this,
                                                         block.end)
-                if covering_blocks and 1 == max([block.length for block in covering_blocks]):
+                if covering_blocks and 1 == max([block.length
+                                                 for block in covering_blocks]):
                     mask[block.end + 1] = WHITE
 
     def _covering_blocks(self, blocks, start, end=None):
@@ -168,7 +179,8 @@ class Solver(object):
         if end is None:
             end = start
 
-        return [block for block in blocks
+        return [block
+                for block in blocks
                 if block.start <= start and block.end >= end]
 
     @log_changes("R1.4")
@@ -191,12 +203,11 @@ class Solver(object):
             # if the two adjoint black run is separated by an UNKNOWN cell
             if black_runs[i + 1].start - black_runs[i].end == 1 and \
                mask[black_runs[i].end + 1] == UNKNOWN:
-                covering_blocks = self._covering_blocks(meta,
-                                                        black_runs[i].end,
+                covering_blocks = self._covering_blocks(meta, black_runs[i].end,
                                                         black_runs[i + 1].start)
                 if covering_blocks:
-                    covering_max_len = max(
-                        [block.length for block in covering_blocks])
+                    covering_max_len = max([block.length
+                                            for block in covering_blocks])
                     if covering_max_len < black_runs[i].length + \
                             black_runs[i + 1].length + 1:
                         mask[black_runs[i].end + 1] = WHITE
@@ -263,7 +274,8 @@ class Solver(object):
                 # lower bound is less than the upper bound
                 if (found_empty or m == 0) and lower_bound < upper_bound:
                     mask[lower_bound:upper_bound] = [
-                        BLACK] * (upper_bound - lower_bound)
+                        BLACK
+                    ] * (upper_bound - lower_bound)
 
             found_empty = 0
             if minL > 0 and mask[i + 1] != BLACK and mask[i] == BLACK:
@@ -278,9 +290,11 @@ class Solver(object):
 
                 # if an empty cell is found or we reached the wall and the
                 # lower bound is less than the upper bound
-                if (found_empty or n == len(mask) - 1) and lower_bound < upper_bound:
+                if (found_empty or
+                        n == len(mask) - 1) and lower_bound < upper_bound:
                     mask[lower_bound:upper_bound] = [
-                        BLACK] * (upper_bound - lower_bound)
+                        BLACK
+                    ] * (upper_bound - lower_bound)
 
     @log_changes("R1.5")
     def mark_boundary_if_possible(self, mask, meta):
@@ -297,8 +311,8 @@ class Solver(object):
             return
 
         for block in self._get_black_runs(mask):
-            covering_blocks = self._covering_blocks(
-                meta.blocks, block.start, block.end)
+            covering_blocks = self._covering_blocks(meta.blocks, block.start,
+                                                    block.end)
 
             same_length = 1
             for cov in covering_blocks:

@@ -29,26 +29,27 @@ class Solution(CommonEquality):
         """
         Returns the BMP header.
         """
-        return struct.pack('<cc4IiiHH6I',
-                           'B',    # identifies the file type
-                           'M',    # identifies the file type
-                           0,      # size of the file
-                           0,      # application specific unused field
-                           54,     # offset: 14 + 40 (BMP header + DIB header)
-                           40,     # header size (BITMAPINFOHEADER)
-                           self.width,  # number of columns
-                           -1 * self.height,  # number of rows
-                           # (if <0 -> the picture won't be
-                           # upside down)
-                           1,      # number of color planes
-                           BPP,    # 24 bpp
-                           0,      # no compression
-                           0,      # size of the pixel array
-                           0,      # horisontal resolution
-                           0,      # vertical resolution
-                           0,      # number of colors in the palette
-                           0       # all colors are important
-                           )
+        return struct.pack(
+            '<cc4IiiHH6I',
+            'B',  # identifies the file type
+            'M',  # identifies the file type
+            0,  # size of the file
+            0,  # application specific unused field
+            54,  # offset: 14 + 40 (BMP header + DIB header)
+            40,  # header size (BITMAPINFOHEADER)
+            self.width,  # number of columns
+            -1 * self.height,  # number of rows
+            # (if <0 -> the picture won't be
+            # upside down)
+            1,  # number of color planes
+            BPP,  # 24 bpp
+            0,  # no compression
+            0,  # size of the pixel array
+            0,  # horisontal resolution
+            0,  # vertical resolution
+            0,  # number of colors in the palette
+            0  # all colors are important
+        )
 
     def _pack_bmp_pixels(self):
         """
@@ -66,7 +67,7 @@ class Solution(CommonEquality):
                 if line[x] == raster.BLACK:
                     start_idx = (y * rowsize) + x * color_depth
                     try:
-                        pixel_array[start_idx: start_idx + color_depth] = BLACK
+                        pixel_array[start_idx:start_idx + color_depth] = BLACK
                     except IndexError as e:
                         print((x, y, start_idx))
                         raise e
