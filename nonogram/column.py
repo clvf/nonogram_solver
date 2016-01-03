@@ -12,4 +12,4 @@ class Column(Line):
         super(Column, self).__init__(*args)
 
     def __str__(self):
-        return "column: " + super(Column, self).__str__()
+        return "col: " + super(Column, self).__str__()

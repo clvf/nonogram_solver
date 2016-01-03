@@ -13,6 +13,6 @@ class Line(CommonEquality):
         self.blocks = blocks
 
     def __str__(self):
-        str_ = "idx: {!s}, size: {!s}, blocks: [".format(self.idx, self.size)
+        str_ = "{!s}, size: {!s}, blocks: [".format(self.idx, self.size)
 
         return str_ + "; ".join((str(block) for block in self.blocks)) + "]"

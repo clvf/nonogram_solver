@@ -152,7 +152,7 @@ class Solver(object):
                 covering_blocks = self._covering_blocks(blocks_wo_this,
                                                         block.start)
 
-                if 1 == max([block.length for block in covering_blocks]):
+                if covering_blocks and 1 == max([block.length for block in covering_blocks]):
                     mask[block.start - 1] = WHITE
 
             # if the end of the block is BLACK and the next cell is UNKNOWN
@@ -160,7 +160,7 @@ class Solver(object):
                mask[block.end + 1] == UNKNOWN:
                 covering_blocks = self._covering_blocks(blocks_wo_this,
                                                         block.end)
-                if 1 == max([block.length for block in covering_blocks]):
+                if covering_blocks and 1 == max([block.length for block in covering_blocks]):
                     mask[block.end + 1] = WHITE
 
     def _covering_blocks(self, blocks, start, end=None):
@@ -244,7 +244,8 @@ class Solver(object):
 
         for i in range(1, len(mask) - 1):
             covering_blocks = self._covering_blocks(meta.blocks, i)
-            minL = min([block.length for block in covering_blocks])
+            if covering_blocks:
+                minL = min([block.length for block in covering_blocks])
 
             found_empty = 0
             m, n = -1, -1
@@ -304,7 +305,7 @@ class Solver(object):
                 if cov.length != block.length:
                     same_length = 0
 
-            if same_length and len(covering_blocks) > 0:
+            if same_length and covering_blocks:
                 if block.start > 0:
                     mask[block.start - 1] = WHITE
                 if block.end < len(mask) - 1:
@@ -342,8 +343,7 @@ class Solver(object):
         rj.s = (rj.s + 1), if cell rj.s−1 is colored
         rj.e = (rj.e − 1), if cell rj.e+1 is colored
         """
-        return
-        # XXX buggy, don't use the code below
+
         for j in range(len(meta.blocks)):
             block = meta.blocks[j]
             if block.start - 1 >= 0 and mask[block.start - 1] == BLACK:

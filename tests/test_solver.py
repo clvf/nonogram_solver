@@ -278,7 +278,7 @@ class TestSolver(unittest.TestCase):
             [UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] * 2 + [UNKNOWN] * 6)
 
         Solver().fill_cells_based_on_boundary(
-            mask, Line(size=9, idx=0, blocks=blocks))
+            mask, Line(size=13, idx=0, blocks=blocks))
         self.assertEqual(expected, mask)
 
         # fill one cell on the left
@@ -293,7 +293,7 @@ class TestSolver(unittest.TestCase):
             mask, Line(size=9, idx=0, blocks=blocks))
         self.assertEqual(expected, mask)
 
-        # fill one cell on the right boundary is the wall
+        # fill one cell on the right, boundary is the wall
         blocks = [Block(start=0, end=3, length=3),
                   Block(start=0, end=8, length=4)]
         mask = bytearray([UNKNOWN] + [BLACK] + [UNKNOWN] * 7)
@@ -312,6 +312,18 @@ class TestSolver(unittest.TestCase):
         Solver().fill_cells_based_on_boundary(
             mask, Line(size=9, idx=0, blocks=blocks))
         self.assertEqual(expected, mask)
+
+        # if there's a cell that isn't covered by a block
+        blocks = [Block(start=0, end=4, length=3),
+                  Block(start=7, end=12, length=2)]
+        mask = bytearray(
+            [UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] + [UNKNOWN] * 7)
+
+        Solver().fill_cells_based_on_boundary(
+            mask, Line(size=13, idx=0, blocks=blocks))
+        # nothing should be changed
+        self.assertEqual(mask, mask)
+
 
     def test_mark_boundary_if_possible(self):
         # if the line is solved (no UNKNOWN) then there's nothing to do...
@@ -340,12 +352,12 @@ class TestSolver(unittest.TestCase):
             size=10, idx=0, blocks=[Block(start=0, end=3, length=2),
                                     Block(start=3, end=7, length=3), Block(start=7, end=9, length=1)])
 
-        Solver().check_meta_consistency(meta)
+        Solver().check_meta_consistency(None, meta)
         self.assertEqual(expected, meta)
 
         meta = Line(size=10, idx=0, blocks=[Block(start=0, end=9, length=2)])
         expected = copy(meta)
-        Solver().check_meta_consistency(meta)
+        Solver().check_meta_consistency(None, meta)
         self.assertEqual(expected, meta)
 
         meta = Line(size=10, idx=0, blocks=[Block(start=0, end=7, length=2),
@@ -354,7 +366,7 @@ class TestSolver(unittest.TestCase):
             size=10, idx=0, blocks=[Block(start=0, end=3, length=2),
                                     Block(start=3, end=7, length=3), Block(start=7, end=9, length=1)])
 
-        Solver().check_meta_consistency(meta)
+        Solver().check_meta_consistency(None, meta)
         self.assertEqual(expected, meta)
 
     def test_look_for_trailing_white_cell(self):
