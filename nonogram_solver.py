@@ -14,7 +14,7 @@ def initialize_raster(file_content):
 
 
 def main(args=None):
-    logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='%(message)s', level=logging.DEBUG if args.debug else logging.WARNING)
     with open(args.input_file, 'r') as INPUT:
         raster = initialize_raster(INPUT.readlines())
         solution = Solver().solve(raster)
@@ -37,5 +37,6 @@ if __name__ == '__main__':
         '--bmp-file',
         dest='bmp_file',
         help='write the solution to the specified file in BMP format')
+    parser.add_argument('--debug', help='enable debug logs', action='store_true')
 
     main(args=parser.parse_args())

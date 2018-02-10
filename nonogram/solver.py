@@ -256,6 +256,7 @@ class Solver(object):
 
         for i in range(1, len(mask) - 1):
             covering_blocks = self._covering_blocks(meta.blocks, i)
+            minL = 0
             if covering_blocks:
                 minL = min([block.length for block in covering_blocks])
 
