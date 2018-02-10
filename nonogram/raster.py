@@ -7,7 +7,6 @@ import copy
 
 from .block import Block
 from .column import Column
-from .discrepancyinmodel import DiscrepancyInModel
 from .row import Row
 
 BLACK = 88  # \x58: ascii 'X'
