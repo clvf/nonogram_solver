@@ -6,7 +6,6 @@ from .line import Line
 
 
 class Row(Line):
-
     def __init__(self, *args):
         self.is_row = True
         super(Row, self).__init__(*args)

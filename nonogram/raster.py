@@ -15,7 +15,6 @@ WHITE = 32  # \x20: ascii ' '
 
 
 class Raster(object):
-
     def __init__(self, **kwargs):
         self.table = kwargs['table']
         self.width = len(self.table[0])
@@ -28,8 +27,9 @@ class Raster(object):
         header = specification.pop(0).split()
         (width, height) = (int(header[0]), int(header[1]))
 
-        table = [bytearray((UNKNOWN for j in range(width)))
-                 for i in range(height)]
+        table = [
+            bytearray((UNKNOWN for j in range(width))) for i in range(height)
+        ]
 
         row_meta = list()
         col_meta = list()
@@ -41,8 +41,10 @@ class Raster(object):
             size = height if not is_row else width
             meta_idx = idx if not is_row else idx - width
 
-            blocks = [Block(0, size - 1, length)
-                      for length in specification[idx].split()]
+            blocks = [
+                Block(0, size - 1, length)
+                for length in specification[idx].split()
+            ]
 
             if is_row:
                 row_meta.append(Row(size, meta_idx, blocks))
@@ -110,8 +112,9 @@ class Raster(object):
 
             if rec[i] != UNKNOWN and mask[i] != UNKNOWN \
                     and rec[i] != mask[i]:
-                raise DiscrepancyInModel("CURRENT: {!s} NEW: {!s}".format(
-                    original, mask))
+                raise DiscrepancyInModel(
+                    "CURRENT: {!s} NEW: {!s}".format(original, mask)
+                )
 
         return rec, modified_cells
 

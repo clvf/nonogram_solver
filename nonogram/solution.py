@@ -13,7 +13,6 @@ BPP = 24
 
 
 class Solution(CommonEquality):
-
     def __init__(self, table):
         self.table = table
         self.width = len(table[0])
