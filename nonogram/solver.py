@@ -80,6 +80,7 @@ class Solver(object):
         # Rules 2.*
         self.check_meta_consistency(None, meta)
         self.look_for_trailing_white_cell(mask, meta)
+        self.narrow_boundaries(mask, meta)
 
     @log_changes("R1.1")
     def fill_intersections(self, mask, meta):
@@ -365,3 +366,46 @@ class Solver(object):
 
             if block.end + 1 < len(mask) and mask[block.end + 1] == BLACK:
                 block.end -= 1
+
+    def _runs_in_block_range(self, block, mask):
+        """Return the runs that are within the block range entirely."""
+        return [run for run in self._get_black_runs(mask) if block.start <= run.start and run.end <= block.end]
+
+    def _is_segment_in_block_range(self, segment, blocks):
+        """Return whether the segment is in the range of one of the blocks."""
+        for block in blocks:
+            if block.start <= segment.start and segment.end <= block.end:
+                return True
+
+        return False
+
+    @log_changes("R2.3")
+    def narrow_boundaries(self, mask, meta):
+        """Rule 2.3:
+
+        rj.s = (i.e + 2), if black segment i only belongs to the former black
+                          runs of run j
+
+        rj.e = (i.s − 2), if black segment i only belongs to the later black
+                          runs of run j
+        """
+        for block_idx, block in enumerate(meta.blocks):
+
+            runs_in_block_range = self._runs_in_block_range(block, mask)
+
+            # runs in the block's range that are longer than the block length
+            for black_segment in [r for r in runs_in_block_range if block.length < r.length]:
+
+                # if this is the last block in line
+                if ((len(meta.blocks) == block_idx+1
+                    # or if black segment only belongs to the former black runs
+                    or not self._is_segment_in_block_range(black_segment, meta.blocks[block_idx+1:]))
+                    # and it is worth the change
+                    and block.start < black_segment.end + 2):
+                    block.start = black_segment.end + 2
+
+                # if black segment only belongs to the later black runs
+                if (not self._is_segment_in_block_range(black_segment, meta.blocks[:block_idx])
+                    # and it is worth the change
+                    and black_segment.start - 2 < block.end):
+                    block.end = black_segment.start - 2
