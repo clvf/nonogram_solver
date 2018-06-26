@@ -2,9 +2,10 @@
 Class representing the solution of a puzzle.
 """
 
-from .commonequality import CommonEquality
-# import .raster
 import struct
+
+from nonogram import raster
+from nonogram.commonequality import CommonEquality
 
 # Globals
 WHITE = (255, 255, 255)

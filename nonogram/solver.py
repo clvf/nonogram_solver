@@ -2,13 +2,15 @@
 Implementation of the logic to solve the nonogram.
 """
 
-from .block import Block
-from .raster import BLACK
-from .raster import UNKNOWN
-from .raster import WHITE
-from .solution import Solution
 import copy
+import functools
 import logging
+
+from nonogram.block import Block
+from nonogram.raster import BLACK
+from nonogram.raster import UNKNOWN
+from nonogram.raster import WHITE
+from nonogram.solution import Solution
 
 
 def log_changes(rule):
@@ -18,6 +20,8 @@ def log_changes(rule):
     """
 
     def wrap(f):
+
+        @functools.wraps(f)
         def wrapped_f(*args):
             mask = args[1]
             meta = args[2]

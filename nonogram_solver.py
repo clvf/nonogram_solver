@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-from nonogram.raster import Raster
-from nonogram.solver import Solver
 import argparse
 import logging
 import sys
+
+from nonogram.raster import Raster
+from nonogram.solver import Solver
 
 
 def initialize_raster(file_content):

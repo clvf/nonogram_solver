@@ -5,9 +5,9 @@ Class representing the nonogram model.
 from functools import reduce
 import copy
 
-from .block import Block
-from .column import Column
-from .row import Row
+from nonogram.block import Block
+from nonogram.column import Column
+from nonogram.row import Row
 
 BLACK = 88  # \x58: ascii 'X'
 UNKNOWN = 46  # \x2E: ascii '.'

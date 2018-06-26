@@ -2,7 +2,7 @@
 Class incorporating the information that we know of a column.
 """
 
-from .line import Line
+from nonogram.line import Line
 
 
 class Column(Line):

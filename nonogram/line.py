@@ -2,7 +2,7 @@
 Class incorporating the meta information that we know of a row or column.
 """
 
-from .commonequality import CommonEquality
+from nonogram.commonequality import CommonEquality
 
 
 class Line(CommonEquality):
