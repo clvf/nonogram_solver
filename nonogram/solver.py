@@ -20,7 +20,6 @@ def log_changes(rule):
     """
 
     def wrap(f):
-
         @functools.wraps(f)
         def wrapped_f(*args):
             mask = args[1]
@@ -31,13 +30,15 @@ def log_changes(rule):
 
             if mask != orig_mask:
                 logging.debug(
-                    "{} {}: {!s} -> {!s} {!s}".
-                    format(rule, f.__name__, orig_mask, mask, meta)
+                    "{} {}: {!s} -> {!s} {!s}".format(
+                        rule, f.__name__, orig_mask, mask, meta
+                    )
                 )
             if meta != orig_meta:
                 logging.debug(
-                    "{} {}: {!s} -> {!s}".
-                    format(rule, f.__name__, orig_meta, meta)
+                    "{} {}: {!s} -> {!s}".format(
+                        rule, f.__name__, orig_meta, meta
+                    )
                 )
 
         return wrapped_f
@@ -87,6 +88,9 @@ class Solver(object):
         self.check_meta_consistency(None, meta)
         self.look_for_trailing_white_cell(mask, meta)
         self.narrow_boundaries(mask, meta)
+
+        # Rules 3.*
+        self.fill_scattered_ranges(mask, meta)
 
     @log_changes("R1.1")
     def fill_intersections(self, mask, meta):
@@ -290,9 +294,8 @@ class Solver(object):
                 # if an empty cell is found or we reached the wall and the
                 # lower bound is less than the upper bound
                 if (found_empty or m == 0) and lower_bound < upper_bound:
-                    mask[lower_bound:upper_bound] = [
-                        BLACK
-                    ] * (upper_bound - lower_bound)
+                    mask[lower_bound:upper_bound
+                        ] = [BLACK] * (upper_bound - lower_bound)
 
             found_empty = 0
             if minL > 0 and mask[i + 1] != BLACK and mask[i] == BLACK:
@@ -309,9 +312,8 @@ class Solver(object):
                 # lower bound is less than the upper bound
                 if (found_empty or
                     n == len(mask) - 1) and lower_bound < upper_bound:
-                    mask[lower_bound:upper_bound] = [
-                        BLACK
-                    ] * (upper_bound - lower_bound)
+                    mask[lower_bound:upper_bound
+                        ] = [BLACK] * (upper_bound - lower_bound)
 
     @log_changes("R1.5")
     def mark_boundary_if_possible(self, mask, meta):
@@ -419,15 +421,71 @@ class Solver(object):
             ]:
 
                 # if this is the last block in line
-                if ((len(meta.blocks) == block_idx+1
-                    # or if black segment only belongs to the former black runs
-                    or not self._is_segment_in_block_range(black_segment, meta.blocks[block_idx+1:]))
+                if (
+                    (
+                        len(meta.blocks) == block_idx + 1
+                        # or if black segment only belongs to the former black runs
+                        or not self._is_segment_in_block_range(
+                            black_segment, meta.blocks[block_idx + 1:]
+                        )
+                    )
                     # and it is worth the change
-                    and block.start < black_segment.end + 2):
+                    and block.start < black_segment.end + 2
+                ):
                     block.start = black_segment.end + 2
 
                 # if black segment only belongs to the later black runs
-                if (not self._is_segment_in_block_range(black_segment, meta.blocks[:block_idx])
+                if (
+                    not self._is_segment_in_block_range(
+                        black_segment, meta.blocks[:block_idx]
+                    )
                     # and it is worth the change
-                    and black_segment.start - 2 < block.end):
+                    and black_segment.start - 2 < block.end
+                ):
                     block.end = black_segment.start - 2
+
+    @log_changes("R3.1")
+    def fill_scattered_ranges(self, mask, meta):
+        """Rule 3.1:
+
+        Fill cells between first (m) and last (n) colored cell for a black
+        run (j) and update range:
+
+        rj.s = (m - u)
+        rj.e = (n + u)
+        where u = LBj - (n - m + 1)
+
+        """
+        for block in meta.blocks:
+            runs = sorted(
+                self._runs_in_block_range(block, mask),
+                key=lambda block: block.start
+            )
+
+            if len(runs) == 0:
+                continue
+
+            (first, last) = (runs[0].start, runs[-1].end)
+
+            blocks_wo_this = [blk for blk in meta.blocks if blk != block]
+
+            # if the black run is covered only by the current block
+            # ie. it is not covered by any of the other blocks...
+            if not self._covering_blocks(
+                blocks_wo_this, first
+            ) and not self._covering_blocks(
+                blocks_wo_this, last
+            ) and block.length >= (last - first + 1):
+                # update mask
+                if first < last:
+                    mask[first:last + 1] = [BLACK] * (last - first + 1)
+
+                # len of the run
+                runlen = block.length - (last - first + 1)
+
+                # update the block's metadata
+                if block.start < first - runlen:
+                    block.start = first - runlen
+
+                if block.end > last + runlen:
+                    block.end = last + runlen

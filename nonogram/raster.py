@@ -5,6 +5,7 @@ Class representing the nonogram model.
 from functools import reduce
 import copy
 
+from nonogram import DiscrepancyInModel
 from nonogram.block import Block
 from nonogram.column import Column
 from nonogram.row import Row
