@@ -7,11 +7,10 @@ import os
 import sys
 import unittest
 
-PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(
     os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__)))
 )
-sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, os.path.pardir)))
 
 import nonogram
 from nonogram.block import Block
@@ -701,6 +700,27 @@ class TestSolver(unittest.TestCase):
         self.assertEqual(expected_mask, mask)
         self.assertEqual(expected_meta, meta)
 
+    def test_get_non_white_runs(self):
+        mask = bytearray(b'  X. .....')
+        expected = [Block(start=2, end=3, length=2),
+                    Block(start=5, end=9, length=5)]
+        self.assertEqual(expected, Solver()._get_non_white_runs(mask))
+
+        mask = bytearray(b'..X  .X  .')
+        expected = [Block(start=0, end=2, length=3),
+                    Block(start=5, end=6, length=2),
+                    Block(start=9, end=9, length=1)]
+        self.assertEqual(expected, Solver()._get_non_white_runs(mask))
+
+        mask = bytearray(b'.    .X.X ')
+        expected = [Block(start=0, end=0, length=1),
+                    Block(start=5, end=8, length=4)]
+        self.assertEqual(expected, Solver()._get_non_white_runs(mask))
+
+        mask = bytearray(b'.    .X.  ')
+        expected = [Block(start=0, end=0, length=1),
+                    Block(start=5, end=7, length=3)]
+        self.assertEqual(expected, Solver()._get_non_white_runs(mask))
 
 
 if __name__ == '__main__':

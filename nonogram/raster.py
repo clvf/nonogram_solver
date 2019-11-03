@@ -91,7 +91,7 @@ class Raster(object):
     def update_row(self, idx=None, mask=None):
         """Updates the UNKNOWN cells of the idx'th row based on the mask."""
         row = self.get_row(idx)
-        (new, modified_cells) = self._update_list(rec=row, mask=mask)
+        (new, modified_cells) = self._update_list(rec=row, mask=mask, idx=idx, type_='row')
         self._replace_row(row=new, idx=idx)
 
         return modified_cells
@@ -101,7 +101,7 @@ class Raster(object):
         params."""
         self.table[idx] = row
 
-    def _update_list(self, rec=None, mask=None):
+    def _update_list(self, rec=None, mask=None, idx=None, type_=None):
         """Updates the list based on the mask."""
         modified_cells = []
         original = copy.deepcopy(rec)
@@ -114,7 +114,7 @@ class Raster(object):
             if rec[i] != UNKNOWN and mask[i] != UNKNOWN \
                     and rec[i] != mask[i]:
                 raise DiscrepancyInModel(
-                    "CURRENT: {!s} NEW: {!s}".format(original, mask)
+                    "{}: {}, CURRENT: {!s} NEW: {!s}".format(type_, str(idx), original, mask)
                 )
 
         return rec, modified_cells
@@ -122,7 +122,7 @@ class Raster(object):
     def update_col(self, idx=None, mask=None):
         """Updates the UNKNOWN cells of the idx'th column based on the mask."""
         col = self.get_col(idx)
-        (new, modified_cells) = self._update_list(rec=col, mask=mask)
+        (new, modified_cells) = self._update_list(rec=col, mask=mask, idx=idx, type_='col')
         self._replace_col(col=new, idx=idx)
 
         return modified_cells

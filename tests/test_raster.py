@@ -4,15 +4,14 @@ import os
 import sys
 import unittest
 
-PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(
     os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__)))
 )
-sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, os.path.pardir)))
 
+import nonogram
 from nonogram.block import Block
 from nonogram.column import Column
-from nonogram.discrepancyinmodel import DiscrepancyInModel
 from nonogram.raster import Raster
 from nonogram.row import Row
 
@@ -160,7 +159,7 @@ class TestRaster(unittest.TestCase):
 
         # if rec and mask differ in "known" cells that's a discrepancy
         mask[0] = WHITE
-        with self.assertRaises(DiscrepancyInModel):
+        with self.assertRaises(nonogram.DiscrepancyInModel):
             raster._update_list(rec, mask)
 
     def test_update_row(self):

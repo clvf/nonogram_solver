@@ -91,6 +91,7 @@ class Solver(object):
 
         # Rules 3.*
         self.fill_scattered_ranges(mask, meta)
+        self.adjust_ranges_based_on_white_cells(mask, meta)
 
     @log_changes("R1.1")
     def fill_intersections(self, mask, meta):
@@ -471,6 +472,8 @@ class Solver(object):
 
             # if the black run is covered only by the current block
             # ie. it is not covered by any of the other blocks...
+            # TODO: check whether there's a covering block between (first,
+            # last) not covering these two
             if not self._covering_blocks(
                 blocks_wo_this, first
             ) and not self._covering_blocks(
@@ -489,3 +492,138 @@ class Solver(object):
 
                 if block.end > last + runlen:
                     block.end = last + runlen
+
+    def _get_non_white_runs(self, mask):
+        """Returns those runs that are delimeted by white cells."""
+        res = []
+        in_a_block = False
+        last_idx = len(mask) - 1
+        for idx, cell in enumerate(mask):
+            if cell != WHITE and not in_a_block:
+                in_a_block = True
+                start = idx
+
+            if cell == WHITE and in_a_block:
+                in_a_block = False
+                end = idx - 1
+                res.append(Block(start, end, length=end - start + 1))
+
+            if idx == last_idx and in_a_block:
+                res.append(Block(start, last_idx, length=last_idx - start + 1))
+
+        return res
+
+    def _block_len_in_section(self, block, section):
+        """Return the length of a block in a section [start, end]."""
+        len_start = max(block.start, section.start)
+        len_end = min(block.end, section.end)
+
+        return len_end - len_start + 1
+
+
+    @log_changes("R3.2")
+    def adjust_ranges_based_on_white_cells(self, mask, meta):
+        """Rule 3.2:
+
+        For each black run j, find out all segments
+        bounded by empty cells in (rjs , rje). Denote the number
+        of these segments to be b and index them as 0, 1, ..., b − 1.
+
+        Step 1. Set i = 0.
+
+        Step 2. If the length of segment i is less than LBj, i = i + 1
+        and go to step 2. Otherwise, set rjs = the start index
+        of segment i, stop and go to step 3.
+
+        Step 3. Set i = b − 1.
+
+        Step 4. If the length of segment i is less than LBj, i = i − 1
+        and go to step 4. Otherwise, set rje = the end index
+        of segment i, stop and go to step 5.
+
+        Step 5. If there still remain some segments with lengths less
+        than LBj, for each of this kind of segments, if the
+        segment does not belong to other black runs, all
+        cells in this segment should be left empty.
+        """
+        # we're relying on that the non_white_runs contains the segments
+        # sorted by start index
+        logging.debug(
+                    "{}: {!s} {!s}".format(
+                        'R3.2', mask, meta
+                    )
+                )
+
+        non_white_runs = self._get_non_white_runs(mask)
+
+        logging.debug(
+                    "{} non_white_runs: [{!s}".format(
+                        'R3.2', "; ".join((str(block) for block in non_white_runs)) + "]"
+                    )
+                )
+
+        for block in meta.blocks:
+            # iterate only over those runs that are entirely contained by
+            # the block
+            contained_runs = [
+                r for r in non_white_runs
+                if block.start <= r.end and block.end >= r.start
+            ]
+            logging.debug(
+                "{} block: {!s}, contained_runs: [{}]".format(
+                            'R3.2', block, "; ".join((str(block) for block in contained_runs))
+                        )
+                    )
+
+            for run in contained_runs:
+                # if the run starts outside of the boundaries of this block
+                # but its "within boundary" length is long enough
+                # then we cannot narrow further the start of the block
+                if run.start < block.start and self._block_len_in_section(run, block) >= block.length:
+                    break
+
+                # if the block wouldn't fit in the run
+                if self._block_len_in_section(run, block) < block.length:
+                    continue
+                else:
+                    logging.debug("R3.2 block.start: {}".format(str(block.start)))
+                    block.start = run.start
+                    logging.debug("R3.2 block.start = run.start: {}".format(str(block.start)))
+                    break
+
+            for run in contained_runs[::-1]:
+                # if the run ends outside of the boundaries of this block
+                # but its "within boundary" length is long enough
+                # then we cannot narrow further the end of the block
+                if block.end < run.end and self._block_len_in_section(run, block) >= block.length:
+                    break
+
+                if self._block_len_in_section(run, block) < block.length:
+                    continue
+                else:
+                    logging.debug("R3.2 block.end: {}".format(str(block.end)))
+                    block.end = run.end
+                    logging.debug("R3.2 block.end = run.end: {}".format(str(block.end)))
+                    break
+
+            blocks_wo_this = [blk for blk in meta.blocks if blk != block]
+
+            # recompute contained_runs?
+
+            for run in contained_runs:
+                # if the non white run is covered only by the current block
+                # (ie. it is not covered by any of the other blocks)
+                # and is shorter than the block
+                # then it can be marked as white
+                # (non-white runs that are shorter than this one and not
+                # covered by any other block should be set to white)
+                if not self._covering_blocks(
+                    blocks_wo_this, run.start
+                ) and not self._covering_blocks(
+                    blocks_wo_this, run.end
+                ) and self._block_len_in_section(run, block) < block.length:
+                    for cell in mask[run.start:run.end + 1]:
+                        assert cell != BLACK, "R3.2: non-white segment should not contain any black cell"
+
+                    # update mask
+                    mask[run.start:run.end + 1] = [WHITE] * (run.end - run.start + 1)

@@ -26,7 +26,7 @@ def main(args=None):
         if not solution:
             print("Program couldn't find any solution.")
             logging.debug(str(raster))
-            sys.exit(1)
+            sys.exit(2)
 
         print(str(solution), end='')
         if args.bmp_file:
