@@ -50,7 +50,6 @@ class Solver(object):
     def solve(self, raster):
         """Does a rule based elimination on the raster object and returns a
         solution (object) if there's any and None otherwise."""
-        self.raster = raster
         logging.debug("\n=====\nRule Based Elimination:\n=====\n")
         cells_changed = True
         while (cells_changed):
@@ -637,12 +636,12 @@ class Solver(object):
         of black run j do not overlap the range of black run j − 1 or j + 1.
         """
         self.rule_3_3_1(mask, meta)
-        #rule_3_3_2()
+        self.rule_3_3_2(mask, meta)
         #rule_3_3_3()
 
-    @log_changes("R3.3.1")
+    @log_changes("R3.3-1")
     def rule_3_3_1(self, mask, meta):
-        """Rule 3.3.1:
+        """Rule 3.3-1:
 
         For each black run j with Crjs colored and its range not overlapping
         the range of black run j − 1,
@@ -664,6 +663,7 @@ class Solver(object):
             if mask[block.start] != BLACK:
                 continue
 
+            # if there's a previous block and it's overlapping then continue
             if prev_block and prev_block.end >= block.start:
                 continue
 
@@ -691,3 +691,35 @@ class Solver(object):
             if next_block and next_block.start < block.end + 2:
                 assert block.end + 2 < meta.size
                 next_block.start = block.end + 2
+
+
+    @log_changes("R3.3-2")
+    def rule_3_3_2(self, mask, meta):
+        """Rule 3.3-2:
+
+        For each black run j with its range not overlapping the range of black
+        run j − 1, if an empty cell cw appears after a black cell cb with cw
+        and cb in the range of black run j . Set rje = w − 1
+        """
+        for idx in range(len(meta.blocks)):
+            prev_block = meta.blocks[idx - 1] if idx > 0 else None
+            block = meta.blocks[idx]
+
+            # if there's a previous block and it's overlapping then continue
+            if prev_block and prev_block.end >= block.start:
+                continue
+
+            first_black_cell_idx = meta.size
+            for cell_idx in range(block.start, block.end + 1):
+                if mask[cell_idx] == BLACK:
+                    first_black_cell_idx = cell_idx
+                    break
+
+            first_white_cell_idx = -1
+            for cell_idx in range(first_black_cell_idx, block.end + 1):
+                if mask[cell_idx] == WHITE:
+                    first_white_cell_idx = cell_idx
+                    break
+
+            if first_black_cell_idx < first_white_cell_idx:
+                block.end = first_white_cell_idx - 1
