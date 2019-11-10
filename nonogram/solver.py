@@ -50,6 +50,7 @@ class Solver(object):
     def solve(self, raster):
         """Does a rule based elimination on the raster object and returns a
         solution (object) if there's any and None otherwise."""
+        self.raster = raster
         logging.debug("\n=====\nRule Based Elimination:\n=====\n")
         cells_changed = True
         while (cells_changed):
@@ -92,6 +93,7 @@ class Solver(object):
         # Rules 3.*
         self.fill_scattered_ranges(mask, meta)
         self.adjust_ranges_based_on_white_cells(mask, meta)
+        self.adjust_not_overlapping_black_runs(mask, meta)
 
     @log_changes("R1.1")
     def fill_intersections(self, mask, meta):
@@ -627,3 +629,65 @@ class Solver(object):
 
                     # update mask
                     mask[run.start:run.end + 1] = [WHITE] * (run.end - run.start + 1)
+
+
+    def adjust_not_overlapping_black_runs(self, mask, meta):
+        """Rule 3.3:
+        This rule is designed for solving the situations that the range
+        of black run j do not overlap the range of black run j − 1 or j + 1.
+        """
+        self.rule_3_3_1(mask, meta)
+        #rule_3_3_2()
+        #rule_3_3_3()
+
+    @log_changes("R3.3.1")
+    def rule_3_3_1(self, mask, meta):
+        """Rule 3.3.1:
+
+        For each black run j with Crjs colored and its range not overlapping
+        the range of black run j − 1,
+
+        (1) Color cell Ci, where rjs + 1 ≤ i ≤ rjs + LBj − 1 and
+            leave cell Crjs−1 and Crjs+LBi empty
+        (2) Set rje = (rjs + LBj − 1)
+        (3) If the range of black run j + 1 overlaps the range of
+            black run j , set r(j+1)s = (rje + 2)
+        (4) If r(j−1)e = rjs−1,r(j−1)e = rjs−2
+        """
+        for idx in range(len(meta.blocks)):
+            prev_block = meta.blocks[idx - 1] if idx > 0 else None
+            block = meta.blocks[idx]
+            next_block = (
+                meta.blocks[idx + 1] if idx + 1 < len(meta.blocks) else None
+            )
+
+            if mask[block.start] != BLACK:
+                continue
+
+            if prev_block and prev_block.end >= block.start:
+                continue
+
+            # either there's no previous block (this is the first block) or the
+            # previous block range doesn't overlap with this one
+
+            # (1) color this run's cells from "start"
+            mask[block.start:block.start + block.length] = [BLACK] * block.length
+            # and mark this run's boundaries as white
+            if 0 < block.start:  # if start -1 is within index range
+                mask[block.start - 1] = WHITE
+
+            # if run end + 1 within index range
+            if block.start + block.length < meta.size:
+                mask[block.start + block.length] = WHITE
+
+            # (2) adjust this run's end meta info
+            block.end = block.start + block.length - 1
+            # (4)
+            if prev_block and prev_block.end == block.start - 1:
+                assert block.start - 2 > 0
+                prev_block.end = block.start - 2
+
+            # (3)
+            if next_block and next_block.start < block.end + 2:
+                assert block.end + 2 < meta.size
+                next_block.start = block.end + 2
