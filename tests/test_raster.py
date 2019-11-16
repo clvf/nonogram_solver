@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 
 import os
 import sys
@@ -10,14 +10,13 @@ SCRIPT_DIR = os.path.dirname(
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, os.path.pardir)))
 
 import nonogram
-from nonogram.block import Block
-from nonogram.column import Column
-from nonogram.raster import Raster
-from nonogram.row import Row
-
 from nonogram.raster import BLACK
+from nonogram.raster import Raster
 from nonogram.raster import UNKNOWN
 from nonogram.raster import WHITE
+from nonogram.raster.block import Block
+from nonogram.raster.line import Column
+from nonogram.raster.line import Row
 
 
 class TestRaster(unittest.TestCase):

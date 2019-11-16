@@ -1,21 +1,25 @@
 """
-Class representing the nonogram model.
+Module for the nonogram model.
 """
 
 from functools import reduce
 import copy
+import os
 
 from nonogram import DiscrepancyInModel
-from nonogram.block import Block
-from nonogram.column import Column
-from nonogram.row import Row
+from nonogram.raster import block
+from nonogram.raster import line
 
 BLACK = 88  # \x58: ascii 'X'
 UNKNOWN = 46  # \x2E: ascii '.'
 WHITE = 32  # \x20: ascii ' '
 
 
-class Raster(object):
+class Raster():
+    """
+    Class representing the nonogram model.
+    """
+
     def __init__(self, **kwargs):
         self.table = kwargs['table']
         self.width = len(self.table[0])
@@ -43,14 +47,14 @@ class Raster(object):
             meta_idx = idx if not is_row else idx - width
 
             blocks = [
-                Block(0, size - 1, length)
+                block.Block(0, size - 1, int(length))
                 for length in specification[idx].split()
             ]
 
             if is_row:
-                row_meta.append(Row(size, meta_idx, blocks))
+                row_meta.append(line.Row(size, meta_idx, blocks))
             else:
-                col_meta.append(Column(size, meta_idx, blocks))
+                col_meta.append(line.Column(size, meta_idx, blocks))
 
         return dict(table=table, row_meta=row_meta, col_meta=col_meta)
 
@@ -58,23 +62,25 @@ class Raster(object):
         repr_ = ""
         offset = "   "
         for i in range(self.width):
-            line = offset + "|" * i
-            line += "+" + "-" * (self.width - 1 - i) + " "
-            line += "; ".join((str(block) for block in self.col_meta[i].blocks))
-            repr_ += line + "\n"
+            line_ = offset + "|" * i
+            line_ += "+" + "-" * (self.width - 1 - i) + " "
+            line_ += "; ".join(
+                (str(block) for block in self.col_meta[i].blocks))
+            repr_ += line_ + os.linesep
 
         header = offset
         for i in range(self.width):
             header += str(i % 10)
-        repr_ += header + "\n"
+        repr_ += header + os.linesep
 
         for i in range(self.height):
-            line = " " + str(i % 10) + " "
-            line += self.table[i].decode('ascii') + " "
-            line += "; ".join((str(block) for block in self.row_meta[i].blocks))
-            repr_ += line + "\n"
+            line_ = " " + str(i % 10) + " "
+            line_ += self.table[i].decode('ascii') + " "
+            line_ += "; ".join(
+                (str(block) for block in self.row_meta[i].blocks))
+            repr_ += line_ + os.linesep
 
-        return repr_ + "\n"
+        return repr_ + os.linesep
 
     def get_row(self, idx):
         """Returns the copy of the idx'th row of the internal table."""
@@ -91,7 +97,8 @@ class Raster(object):
     def update_row(self, idx=None, mask=None):
         """Updates the UNKNOWN cells of the idx'th row based on the mask."""
         row = self.get_row(idx)
-        (new, modified_cells) = self._update_list(rec=row, mask=mask, idx=idx, type_='row')
+        (new, modified_cells) = self._update_list(rec=row, mask=mask, idx=idx,
+                                                  type_='row')
         self._replace_row(row=new, idx=idx)
 
         return modified_cells
@@ -111,18 +118,19 @@ class Raster(object):
                 rec[i] = mask[i]
                 modified_cells.append(i)
 
-            if rec[i] != UNKNOWN and mask[i] != UNKNOWN \
-                    and rec[i] != mask[i]:
+            if (rec[i] != UNKNOWN and mask[i] != UNKNOWN
+                    and rec[i] != mask[i]):
                 raise DiscrepancyInModel(
-                    "{}: {}, CURRENT: {!s} NEW: {!s}".format(type_, str(idx), original, mask)
-                )
+                    "{}: {}, CURRENT: {!s} NEW: {!s}".format(
+                        type_, str(idx), original, mask))
 
         return rec, modified_cells
 
     def update_col(self, idx=None, mask=None):
         """Updates the UNKNOWN cells of the idx'th column based on the mask."""
         col = self.get_col(idx)
-        (new, modified_cells) = self._update_list(rec=col, mask=mask, idx=idx, type_='col')
+        (new, modified_cells) = self._update_list(rec=col, mask=mask, idx=idx,
+                                                  type_='col')
         self._replace_col(col=new, idx=idx)
 
         return modified_cells

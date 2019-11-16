@@ -2,10 +2,12 @@
 Class representing the solution of a puzzle.
 """
 
+import dataclasses
+import logging
 import struct
+import typing
 
 from nonogram import raster
-from nonogram.commonequality import CommonEquality
 
 # Globals
 WHITE = (255, 255, 255)
@@ -13,16 +15,19 @@ BLACK = (0, 0, 0)
 BPP = 24
 
 
-class Solution(CommonEquality):
-    def __init__(self, table):
-        self.table = table
-        self.width = len(table[0])
-        self.height = len(table)
+@dataclasses.dataclass
+class Solution():
+    """
+    Class representing the solution of a puzzle.
+    """
+    table: typing.List[typing.List[int]]
+
+    def __post_init__(self):
+        self.width = len(self.table[0])
+        self.height = len(self.table)
 
     def __str__(self):
         """String representation of the internal model."""
-        # return "\r\n".join((str(row) for row in self.table)).encode('ascii')
-        # + "\r\n"
         return "\r\n".join(row.decode('ascii') for row in self.table) + "\r\n"
 
     def _compile_bmp_header(self):
@@ -69,7 +74,8 @@ class Solution(CommonEquality):
                     try:
                         pixel_array[start_idx:start_idx + color_depth] = BLACK
                     except IndexError as e:
-                        print((x, y, start_idx))
+                        logging.exception('BMP coordinates x,y: %d,%d; '
+                                          'start idx: %d', x, y, start_idx)
                         raise e
             y += 1
 
@@ -81,4 +87,4 @@ class Solution(CommonEquality):
         """
         with open(out_file, "wb") as bmp:
             bmp.write(self._compile_bmp_header())
-            bmp.write(self._pack_pixels())
+            bmp.write(self._pack_bmp_pixels())

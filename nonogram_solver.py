@@ -1,11 +1,14 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
+"""
+A program that tries to solve nonograms.
+"""
 
 import argparse
 import logging
 import sys
 
 from nonogram.raster import Raster
-from nonogram.solver import Solver
+from nonogram import solver
 
 
 def initialize_raster(file_content):
@@ -15,13 +18,14 @@ def initialize_raster(file_content):
 
 
 def main(args=None):
-    logging.basicConfig(
-        format='%(message)s',
-        level=logging.DEBUG if args.debug else logging.WARNING
-    )
-    with open(args.input_file, 'r') as INPUT:
-        raster = initialize_raster(INPUT.readlines())
-        solution = Solver().solve(raster)
+    """
+    Read the puzzle from the input file and start solving it.
+    """
+    logging.basicConfig(format='%(message)s', level=logging.DEBUG
+                        if args.debug else logging.WARNING)
+    with open(args.input_file, 'r') as fh:
+        raster = initialize_raster(fh.readlines())
+        solution = solver.solve(raster)
 
         if not solution:
             print("Program couldn't find any solution.")
@@ -37,13 +41,10 @@ def main(args=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Solve nonograms')
     parser.add_argument('input_file', help='file specifying the nonogram')
-    parser.add_argument(
-        '--bmp-file',
-        dest='bmp_file',
-        help='write the solution to the specified file in BMP format'
-    )
-    parser.add_argument(
-        '--debug', help='enable debug logs', action='store_true'
-    )
+    parser.add_argument('--bmp-file', dest='bmp_file',
+                        help='write the solution to the specified'
+                        ' file in BMP format')
+    parser.add_argument('--debug', help='enable debug logs',
+                        action='store_true')
 
     main(args=parser.parse_args())

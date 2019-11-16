@@ -1,11 +1,9 @@
 syntax:
-	python -m py_compile *.py
-	python -m py_compile nonogram/*.py
+	@python3.8 -m py_compile *.py
+	@python3.8 -m py_compile nonogram/*.py
 
 clean:
-	rm -f *.pyo *.pyc
+	@/usr/bin/find . -depth -type d -name '*__pycache__' -exec rm -rf {} \;
 
-autopep:
-	autopep8 -ia *.py
-	autopep8 -ia nonogram/*.py
-	autopep8 -ia tests/*.py
+test:
+	@python3.8 ./tests/*.py
