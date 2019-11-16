@@ -56,18 +56,26 @@ class Solver(object):
             cells_changed = False
             for meta in raster.row_meta:
                 mask = raster.get_row(meta.idx)
+                orig_meta = copy.deepcopy(meta)
 
                 self.linesolve(mask, meta)
 
                 if raster.update_row(mask=mask, idx=meta.idx):
                     cells_changed = True
 
+                if meta != orig_meta:
+                    cells_changed = True
+
             for meta in raster.col_meta:
                 mask = raster.get_col(meta.idx)
+                orig_meta = copy.deepcopy(meta)
 
                 self.linesolve(mask, meta)
 
                 if raster.update_col(mask=mask, idx=meta.idx):
+                    cells_changed = True
+
+                if meta != orig_meta:
                     cells_changed = True
 
         if raster.is_solved():
