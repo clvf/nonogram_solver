@@ -20,7 +20,7 @@ class TestAll(unittest.TestCase):
         examples dir.
         Ie. test that by adding a new rule the model isn't corrupted.
         """
-        for example in glob.glob(os.path.join(PROJ_DIR, 'examples', '*.txt')):
+        for example in sorted(glob.glob(os.path.join(PROJ_DIR, 'examples', '*.txt'))):
             try:
                 completed = subprocess.run(
                     [os.path.join(PROJ_DIR, 'nonogram_solver.py'), example],

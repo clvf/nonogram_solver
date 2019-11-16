@@ -572,67 +572,72 @@ class Solver(object):
                 )
 
         for block in meta.blocks:
-            # iterate only over those runs that are entirely contained by
-            # the block
-            contained_runs = [
+            # iterate only over those runs that start or end within this block
+            covered_runs = [
                 r for r in non_white_runs
                 if block.start <= r.end and block.end >= r.start
             ]
             logging.debug(
-                "{} block: {!s}, contained_runs: [{}]".format(
-                            'R3.2', block, "; ".join((str(block) for block in contained_runs))
+                "{} block: {!s}, covered_runs: [{}]".format(
+                            'R3.2', block, "; ".join((str(block) for block in covered_runs))
                         )
                     )
 
-            for run in contained_runs:
+            # Step 1.
+            for run in covered_runs:
                 # if the run starts outside of the boundaries of this block
                 # but its "within boundary" length is long enough
                 # then we cannot narrow further the start of the block
                 if run.start < block.start and self._block_len_in_section(run, block) >= block.length:
                     break
 
+                # Step 2.
                 # if the block wouldn't fit in the run
                 if self._block_len_in_section(run, block) < block.length:
                     continue
                 else:
-                    logging.debug("R3.2 block.start: {}".format(str(block.start)))
-                    block.start = run.start
                     logging.debug("R3.2 block.start = run.start: {}".format(str(block.start)))
+                    block.start = run.start
                     break
 
-            for run in contained_runs[::-1]:
+            # Step 3.
+            for run in covered_runs[::-1]:
                 # if the run ends outside of the boundaries of this block
                 # but its "within boundary" length is long enough
                 # then we cannot narrow further the end of the block
                 if block.end < run.end and self._block_len_in_section(run, block) >= block.length:
                     break
 
+                # Step 4.
                 if self._block_len_in_section(run, block) < block.length:
                     continue
                 else:
-                    logging.debug("R3.2 block.end: {}".format(str(block.end)))
-                    block.end = run.end
                     logging.debug("R3.2 block.end = run.end: {}".format(str(block.end)))
+                    block.end = run.end
                     break
 
+            # Step 5.
             blocks_wo_this = [blk for blk in meta.blocks if blk != block]
 
-            # recompute contained_runs?
+            # recompute covered_runs?
 
-            for run in contained_runs:
+            for run in covered_runs:
                 # if the non white run is covered only by the current block
                 # (ie. it is not covered by any of the other blocks)
                 # and is shorter than the block
                 # then it can be marked as white
                 # (non-white runs that are shorter than this one and not
                 # covered by any other block should be set to white)
-                if not self._covering_blocks(
-                    blocks_wo_this, run.start
-                ) and not self._covering_blocks(
-                    blocks_wo_this, run.end
-                ) and self._block_len_in_section(run, block) < block.length:
+                if (
+                    # if run is entirely within the boundaries of this block
+                    block.start <= run.start and run.end <= block.end and
+                    not self._covering_blocks(
+                        blocks_wo_this, run.start, run.end
+                    ) and self._block_len_in_section(run, block) < block.length
+                ):
+                    logging.debug("R3.2 step 5: mark run as white: {}".format(str(run)))
                     for cell in mask[run.start:run.end + 1]:
-                        assert cell != BLACK, "R3.2: non-white segment should not contain any black cell"
+                        assert cell != BLACK, "R3.2: segment contains black cell whereas it should be marked as white"
 
                     # update mask
                     mask[run.start:run.end + 1] = [WHITE] * (run.end - run.start + 1)
@@ -645,7 +650,8 @@ class Solver(object):
         """
         self.rule_3_3_1(mask, meta)
         self.rule_3_3_2(mask, meta)
-        #rule_3_3_3()
+        self.rule_3_3_3_1(mask, meta)
+        self.rule_3_3_3_2(mask, meta)
 
     @log_changes("R3.3-1")
     def rule_3_3_1(self, mask, meta):
@@ -731,3 +737,102 @@ class Solver(object):
 
             if first_black_cell_idx < first_white_cell_idx:
                 block.end = first_white_cell_idx - 1
+
+
+    def _runs_starting_in_block_range(self, block, mask):
+        """Return the runs that start within the block range and may end
+        outside."""
+        return [
+            run for run in self._get_black_runs(mask)
+            if block.start <= run.start and run.start <= block.end
+        ]
+
+
+    @log_changes("R3.3-3.1")
+    def rule_3_3_3_1(self, mask, meta):
+        """Rule 3.3-3:
+
+        For each black run j with its range not overlapping the range of black
+        run j − 1, if there is more than one black segment in the range of the
+        black run j, find out all black segments in (rjs, rje).
+        Denote the number of these black segments to be b and index them as
+        0, 1, ..., b − 1.
+
+        (1) Set i = 0
+        (2) Find the first black cell Cs in black segment i
+        (3) Set m = i + 1
+        (4) If m < b, find the first black cell Ct and the end black
+            cell Ce in black segment m,
+
+        If (e − s + 1) > LBj, stop and set rje = t − 2.
+        Otherwise, m = m + 1 and go to step (4).
+        """
+        for idx in range(len(meta.blocks)):
+            prev_block = meta.blocks[idx - 1] if idx > 0 else None
+            block = meta.blocks[idx]
+
+            # if there's a previous block and it's overlapping then continue
+            if prev_block and prev_block.end >= block.start:
+                continue
+
+            runs_in_range = self._runs_starting_in_block_range(block, mask)
+            for i in range(len(runs_in_range)):
+                run_start = runs_in_range[i].start
+                for m in range(i + 1, len(runs_in_range)):
+                    if runs_in_range[m].end - run_start + 1 > block.length:
+                        block.end = runs_in_range[m].start - 2
+                        break
+                else:
+                    # continue as the inner loop wasn't broken
+                    continue
+                # inner loop was broken, block's end has been updated
+                break
+
+    def _runs_ending_in_block_range(self, block, mask):
+        """Return the runs that end within the block range and may start before
+        """
+        return [
+            run for run in self._get_black_runs(mask)
+            if block.start <= run.end and run.end <= block.end
+        ]
+
+
+    @log_changes("R3.3-3.2")
+    def rule_3_3_3_2(self, mask, meta):
+        """Rule 3.3-3:
+
+        For each black run j with its range not overlapping the range of black
+        run j + 1, if there is more than one black segment in the range of the
+        black run j, find out all black segments in (rjs, rje).
+        Denote the number of these black segments to be b and index them as
+        0, 1, ..., b − 1.
+
+        (1) Set i = b - 1
+        (2) Find the last black cell Ce in black segment i
+        (3) Set m = i - 1
+        (4) If m >= 0, find the last black cell Ct and the first black
+            cell Cs in black segment m,
+
+        If (e − s + 1) > LBj, stop and set rjs = t + 2.
+        Otherwise, m = m - 1 and go to step (4).
+        """
+        for idx in range(len(meta.blocks)-1, -1, -1):
+            prev_block = meta.blocks[idx + 1] if idx + 1 < len(meta.blocks) else None
+            block = meta.blocks[idx]
+
+            # if there's a previous block and it's overlapping then continue
+            if prev_block and block.end >= prev_block.start:
+                continue
+
+            runs_in_range = self._runs_ending_in_block_range(block, mask)
+            for i in range(len(runs_in_range)-1, -1, -1):
+                run_end = runs_in_range[i].end
+                for m in range(i - 1, -1, -1):
+                    if run_end - runs_in_range[m].start + 1 > block.length:
+                        block.start = runs_in_range[m].end + 2
+                        break
+                else:
+                    # continue as the inner loop wasn't broken
+                    continue
+                # inner loop was broken, block's start has been updated
+                break
