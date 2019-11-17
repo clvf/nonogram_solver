@@ -21,18 +21,22 @@ def log_changes(rule):
     """
 
     def wrap(func):
+        """Wrapper"""
+
         @functools.wraps(func)
         def wrapped_f(mask, meta):
+            """The new (wrapped) func"""
             orig_mask = copy.deepcopy(mask)
             orig_meta = copy.deepcopy(meta)
             func(mask, meta)
 
             if mask != orig_mask:
-                logging.debug("{} {}: {!s} -> {!s} {!s}".format(
-                    rule, func.__name__, orig_mask, mask, meta))
+                logging.debug("%s %s: %s -> %s %s", rule, func.__name__,
+                              orig_mask, mask, meta)
+
             if meta != orig_meta:
-                logging.debug("{} {}: {!s} -> {!s}".format(
-                    rule, func.__name__, orig_meta, meta))
+                logging.debug("%s %s: %s -> %s", rule, func.__name__,
+                              orig_meta, meta)
 
         return wrapped_f
 

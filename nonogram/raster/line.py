@@ -11,6 +11,7 @@ class Line():
     """
     Class incorporating the meta information that we know of a row or column.
     """
+    # pylint: disable=too-few-public-methods
     size: int
     idx: int
     blocks: typing.List[typing.Any]
@@ -26,6 +27,8 @@ class Row(Line):
     Class incorporating the information that we know of a row.
     """
 
+    # pylint: disable=too-few-public-methods
+
     def __init__(self, *args):
         self.is_row = True
         super(Row, self).__init__(*args)
@@ -38,6 +41,8 @@ class Column(Line):
     """
     Class incorporating the information that we know of a column.
     """
+
+    # pylint: disable=too-few-public-methods
 
     def __init__(self, *args):
         self.is_row = False

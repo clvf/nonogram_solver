@@ -20,16 +20,19 @@ class Raster():
     Class representing the nonogram model.
     """
 
-    def __init__(self, **kwargs):
-        self.table = kwargs['table']
-        self.width = len(self.table[0])
-        self.height = len(self.table)
-        self.row_meta = kwargs['row_meta']
-        self.col_meta = kwargs['col_meta']
+    def __init__(self, table, row_meta, col_meta):
+        self.table = table
+        self.width = len(table[0])
+        self.height = len(table)
+        self.row_meta = row_meta
+        self.col_meta = col_meta
 
-    @staticmethod
-    def parse_metadata(specification=None):
-        header = specification.pop(0).split()
+    @classmethod
+    def from_file(cls, file_):
+        """Return a Raster object modelling the puzzle description passed in
+        """
+        file_content = file_.readlines()
+        header = file_content.pop(0).split()
         (width, height) = (int(header[0]), int(header[1]))
 
         table = [
@@ -39,7 +42,7 @@ class Raster():
         row_meta = list()
         col_meta = list()
 
-        for idx in range(len(specification)):
+        for idx in range(len(file_content)):
             # it's a column if idx < width
             # and a row if idx >= width
             is_row = 0 if idx < width else 1
@@ -48,7 +51,7 @@ class Raster():
 
             blocks = [
                 block.Block(0, size - 1, int(length))
-                for length in specification[idx].split()
+                for length in file_content[idx].split()
             ]
 
             if is_row:
@@ -56,7 +59,7 @@ class Raster():
             else:
                 col_meta.append(line.Column(size, meta_idx, blocks))
 
-        return dict(table=table, row_meta=row_meta, col_meta=col_meta)
+        return cls(**dict(table=table, row_meta=row_meta, col_meta=col_meta))
 
     def __str__(self):
         repr_ = ""

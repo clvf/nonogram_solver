@@ -6,21 +6,6 @@ from nonogram.raster import BLACK
 from nonogram.raster import UNKNOWN
 from nonogram.raster import WHITE
 from nonogram.raster.block import Block
-from nonogram.rules import r1
-from nonogram.rules import r2
-from nonogram.rules import r3
-
-R1_RULES = (r1.fill_intersections, r1.check_spaces,
-            r1.mark_white_cell_at_boundary, r1.mark_white_cell_bween_sgmts,
-            r1.fill_cells_based_on_boundary, r1.mark_boundary_if_possible)
-
-R2_RULES = (r2.check_meta_consistency, r2.look_for_trailing_white_cell,
-            r2.narrow_boundaries)
-
-R3_RULES = (r3.fill_scattered_ranges, r3.adjust_ranges_based_on_white_cells,
-            r3.adjust_not_overlapping_black_runs)
-
-RULE_FUNCS = (*R1_RULES, *R2_RULES, *R3_RULES)
 
 
 def _covering_blocks(blocks, start, end=None):
@@ -121,6 +106,3 @@ def _runs_ending_in_block_range(block, mask):
         run for run in _get_black_runs(mask)
         if block.start <= run.end and run.end <= block.end
     ]
-
-
-__all__ = ('RULE_FUNCS', )

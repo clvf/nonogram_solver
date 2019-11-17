@@ -85,3 +85,10 @@ def narrow_boundaries(mask, meta):
                     # and it is worth the change
                     and black_segment.start - 2 < block.end):
                 block.end = black_segment.start - 2
+
+
+RULES = (check_meta_consistency,
+         look_for_trailing_white_cell,
+         narrow_boundaries)
+
+__all__ = ('RULES', )

@@ -4,8 +4,12 @@ Implementation of the logic to solve the nonogram.
 
 import copy
 
-from nonogram.rules import RULE_FUNCS
+from nonogram.rules import r1
+from nonogram.rules import r2
+from nonogram.rules import r3
 from nonogram.solution import Solution
+
+RULE_FUNCS = (*r1.RULES, *r2.RULES, *r3.RULES)
 
 
 def solve(raster):

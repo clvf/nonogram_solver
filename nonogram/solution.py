@@ -20,6 +20,7 @@ class Solution():
     """
     Class representing the solution of a puzzle.
     """
+    # pylint: disable=too-few-public-methods
     table: typing.List[typing.List[int]]
 
     def __post_init__(self):
@@ -36,8 +37,8 @@ class Solution():
         """
         return struct.pack(
             '<cc4IiiHH6I',
-            'B',  # identifies the file type
-            'M',  # identifies the file type
+            b'B',  # identifies the file type
+            b'M',  # identifies the file type
             0,  # size of the file
             0,  # application specific unused field
             54,  # offset: 14 + 40 (BMP header + DIB header)
@@ -60,16 +61,16 @@ class Solution():
         """
         Returns the BMP representation of the solution.
         """
-        color_depth = BPP / 8
+        color_depth = BPP // 8
         # number of padding bytes in a row:
         # (-1 * size of the pixels in bytes in the row) mod 4
         padbytes = (-1 * color_depth * self.width) % 4
         rowsize = self.width * color_depth + padbytes
         pixel_array = bytearray(255 for i in range(rowsize * self.height))
         y = 0
-        for line in self.table.splitlines():
-            for x in range(self.width):
-                if line[x] == raster.BLACK:
+        for line in self.table:
+            for x, cell in enumerate(line):
+                if cell == raster.BLACK:
                     start_idx = (y * rowsize) + x * color_depth
                     try:
                         pixel_array[start_idx:start_idx + color_depth] = BLACK

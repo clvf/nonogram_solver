@@ -224,3 +224,13 @@ def mark_boundary_if_possible(mask, meta):
                 mask[block.start - 1] = WHITE
             if block.end < len(mask) - 1:
                 mask[block.end + 1] = WHITE
+
+
+RULES = (fill_intersections,
+         check_spaces,
+         mark_white_cell_at_boundary,
+         mark_white_cell_bween_sgmts,
+         fill_cells_based_on_boundary,
+         mark_boundary_if_possible)
+
+__all__ = ('RULES', )

@@ -341,3 +341,10 @@ def rule_3_3_3_2(mask, meta):
                 continue
             # inner loop was broken, block's start has been updated
             break
+
+
+RULES = (fill_scattered_ranges,
+         adjust_ranges_based_on_white_cells,
+         adjust_not_overlapping_black_runs)
+
+__all__ = ('RULES', )

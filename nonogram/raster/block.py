@@ -10,7 +10,7 @@ class Block():
     """
     Class incorporating the information that we have of a block.
     """
-
+    # pylint: disable=too-few-public-methods
     start: int
     end: int
     length: int
