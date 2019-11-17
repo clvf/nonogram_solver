@@ -1,8 +1,7 @@
 # Nonogram Solver
 
-The program solves nonograms that doesn't require guessing or bifurcation
-(chronological backtracking) ie. whose solution can be find by logical
-elimination.
+The program solves nonograms whose solution can be find by logical
+elimination. (Ie. those that don't require guessing or bifurcation.)
 
 ## Usage
 
@@ -47,32 +46,73 @@ found or the puzzle is solved.
 
 ## Puzzle Input Format
 
+Puzzle is defined as a text file with empty lines (containing only whitespace)
+and lines starting with comment (#) ignored.
+
+1. The first line defines the number of columns and rows in the puzzle in this
+   order separated by a single space.
+1. The subsequent lines define the length of blocks in the columns of the puzzle.
+   The leftmost block is the bottom in the column and the rightmost block is at
+   the top of the column.
+   Each number should be separated by a single space.
+1. The following lines define the length of blocks in the rows of the puzzle in
+   left-to-right order.
+   Each number should be separated by a single space.
+
+###### Sample
+
+This puzzle:
+```
+               1   
+         3 2 5 2 3 
+        +-+-+-+-+-+
+      1 | | | | | |
+        +-+-+-+-+-+
+      3 | | | | | |
+        +-+-+-+-+-+
+      5 | | | | | |
+        +-+-+-+-+-+
+  1 1 1 | | | | | |
+        +-+-+-+-+-+
+    1 3 | | | | | |
+        +-+-+-+-+-+
+```
+
+should be represented as follows:
+
+```
+# number of columns   number of rows
+5 5
+# columns:
+3
+2
+5
+2 1
+3
+
+# rows:
+1
+3
+5
+1 1 1
+1 3
+```
+
 ## FAQ
-
-* What kind of nonogram puzzles can this solver cope with?
-
-The program deals with nonograms that can be solved by logical elimination and
-that don't require bifurcation (depth first search based chronological
-backtracking). These are the puzzles that humans can solve (I think) and that
-you find in various online or printed newspapers.
 
 * Is this solver fast?
 
-No. Speed was not a concern during the implementation. It solves a 100x100
-puzzle within 12 seconds on a @2.53GHz Inter i3 CPU.
+  No. Speed was not a concern during the implementation. It solves a 100x100
+  puzzle within 12 seconds on a @2.53GHz Inter i3 CPU.
 
 * What if I need a solver that do bifurcation?
 
-I suggest checking
-[Dr. Steven Simpson's excellent nonogram solver](http://scc-forge.lancaster.ac.uk/open/simpsons/software/pkg-nonowimp.htmlz.en-GB). It's fast, portable and I assume that it can deal with all the solvable
-puzzles.
+  I suggest checking
+  [Dr. Steven Simpson's excellent nonogram solver](http://scc-forge.lancaster.ac.uk/open/simpsons/software/pkg-nonowimp.htmlz.en-GB). It's fast, portable and I assume that it can deal with all the solvable
+  puzzles.
 
 * What are the rules that you're referring to in the code?
 
-This program is an implementation of the logical rules published by
-Chiung-Hsueh Yu, Hui-Lung Lee and Ling-Hwei Chen at the paper titled 
-["An efficient algorithm for solving nonograms"](https://link.springer.com/article/10.1007/s10489-009-0200-0).
-
-* What's the use of this?
-
-This program has integral part of the soon-to-be world peace obviously.
+  This program is an implementation of the logical rules published by
+  Chiung-Hsueh Yu, Hui-Lung Lee and Ling-Hwei Chen at the paper titled 
+  ["An efficient algorithm for solving nonograms"](https://link.springer.com/article/10.1007/s10489-009-0200-0).

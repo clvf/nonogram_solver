@@ -32,7 +32,7 @@ class TestSolver(unittest.TestCase):
         ]:
             print(os.path.basename(test_file), end='')
             try:
-                with open(test_file, 'rb') as fh:
+                with open(test_file, 'r') as fh:
                     if solver.solve(Raster.from_file(fh)):
                         print(': solved')
                     else:

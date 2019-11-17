@@ -23,7 +23,9 @@ from nonogram.raster.line import Row
 class TestRaster(unittest.TestCase):
     # pylint: disable=protected-access,missing-docstring
     def test_from_file(self):
-        spec = io.StringIO("""10 5
+        spec = io.StringIO("""
+10 5
+# columns:
 1
 3
 2
@@ -34,11 +36,16 @@ class TestRaster(unittest.TestCase):
 3
 1 1
 3
+  
+
+	
+# rows:
 1
 1 1
 8 1
 3 1 1
-1 1 1""")
+1 1 1
+""")
         raster = Raster.from_file(spec)
         self.assertEqual(raster.col_meta, [
             Column(5, 0, [Block(0, 4, 1)]),

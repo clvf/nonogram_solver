@@ -5,6 +5,7 @@ Module for the nonogram model.
 from functools import reduce
 import copy
 import os
+import re
 
 from nonogram import DiscrepancyInModel
 from nonogram.raster import block
@@ -13,6 +14,17 @@ from nonogram.raster import line
 BLACK = 88  # \x58: ascii 'X'
 UNKNOWN = 46  # \x2E: ascii '.'
 WHITE = 32  # \x20: ascii ' '
+
+EMPTY = re.compile(r'^\s*$')
+COMMENT = re.compile(r'^\s*#.*$')
+
+def cleanse_puzzle(lines):
+    """Delete emtpy lines and comments from the lines defining a puzzle"""
+    return [
+        line
+        for line in lines
+        if not re.match(EMPTY, line) and not re.match(COMMENT, line)
+    ]
 
 
 class Raster():
@@ -31,7 +43,7 @@ class Raster():
     def from_file(cls, file_):
         """Return a Raster object modelling the puzzle description passed in
         """
-        file_content = file_.readlines()
+        file_content = cleanse_puzzle(file_.readlines())
         header = file_content.pop(0).split()
         (width, height) = (int(header[0]), int(header[1]))
 
