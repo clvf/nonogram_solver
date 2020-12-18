@@ -87,8 +87,7 @@ def narrow_boundaries(mask, meta):
                 block.end = black_segment.start - 2
 
 
-RULES = (check_meta_consistency,
-         look_for_trailing_white_cell,
+RULES = (check_meta_consistency, look_for_trailing_white_cell,
          narrow_boundaries)
 
 __all__ = ('RULES', )

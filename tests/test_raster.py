@@ -79,9 +79,9 @@ class TestRaster(unittest.TestCase):
         ])
 
     def test_is_solved(self):
-        raster = Raster(table=[
-            bytearray((UNKNOWN for j in range(2))) for i in range(3)
-        ], row_meta=[], col_meta=[])
+        raster = Raster(
+            table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
+            row_meta=[], col_meta=[])
         self.assertEqual(False, raster.is_solved())
 
         raster.table = [bytearray((BLACK for i in range(2)))]
@@ -94,16 +94,16 @@ class TestRaster(unittest.TestCase):
         self.assertEqual(False, raster.is_solved())
 
     def test_get_row(self):
-        raster = Raster(table=[
-            bytearray((UNKNOWN for j in range(2))) for i in range(3)
-        ], row_meta=[], col_meta=[])
+        raster = Raster(
+            table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
+            row_meta=[], col_meta=[])
         raster.table[0] = bytearray([BLACK, WHITE])
         self.assertEqual(bytearray([BLACK, WHITE]), raster.get_row(0))
 
     def test_replace_row(self):
-        raster = Raster(table=[
-            bytearray((UNKNOWN for j in range(2))) for i in range(3)
-        ], row_meta=[], col_meta=[])
+        raster = Raster(
+            table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
+            row_meta=[], col_meta=[])
 
         row = bytearray([BLACK, WHITE])
         raster._replace_row(row, 0)
@@ -112,18 +112,18 @@ class TestRaster(unittest.TestCase):
         self.assertNotEqual(row, raster.get_row(1))
 
     def test_get_col(self):
-        raster = Raster(table=[
-            bytearray((UNKNOWN for j in range(2))) for i in range(3)
-        ], row_meta=[], col_meta=[])
+        raster = Raster(
+            table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
+            row_meta=[], col_meta=[])
 
         for i in range(3):
             raster.table[i][0] = BLACK
         self.assertEqual(bytearray([BLACK, BLACK, BLACK]), raster.get_col(0))
 
     def test_replace_col(self):
-        raster = Raster(table=[
-            bytearray((UNKNOWN for j in range(2))) for i in range(3)
-        ], row_meta=[], col_meta=[])
+        raster = Raster(
+            table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
+            row_meta=[], col_meta=[])
 
         col = bytearray([BLACK, WHITE, BLACK])
         raster._replace_col(col, 1)
@@ -150,18 +150,18 @@ class TestRaster(unittest.TestCase):
             raster._update_list(rec, mask)
 
     def test_update_row(self):
-        raster = Raster(table=[
-            bytearray((UNKNOWN for j in range(2))) for i in range(3)
-        ], row_meta=[], col_meta=[])
+        raster = Raster(
+            table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
+            row_meta=[], col_meta=[])
 
         mask = bytearray([BLACK, WHITE])
         self.assertEqual([0, 1], raster.update_row(mask=mask, idx=0))
         self.assertEqual(mask, raster.get_row(0))
 
     def test_update_col(self):
-        raster = Raster(table=[
-            bytearray((UNKNOWN for j in range(2))) for i in range(3)
-        ], row_meta=[], col_meta=[])
+        raster = Raster(
+            table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
+            row_meta=[], col_meta=[])
 
         mask = bytearray([BLACK, WHITE, UNKNOWN])
         self.assertEqual([0, 1], raster.update_col(mask=mask, idx=0))

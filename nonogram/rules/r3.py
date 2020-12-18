@@ -23,9 +23,8 @@ def fill_scattered_ranges(mask, meta):
 
     """
     for block in meta.blocks:
-        runs = sorted(
-            rules._runs_in_block_range(block, mask),
-            key=lambda block: block.start)
+        runs = sorted(rules._runs_in_block_range(block, mask),
+                      key=lambda block: block.start)
 
         if not runs:
             continue
@@ -158,8 +157,8 @@ def adjust_ranges_based_on_white_cells(mask, meta):
                     assert cell != BLACK, "R3.2: segment contains black cell"
 
                 # update mask
-                mask[run.start:run.end + 1] = [WHITE] * (
-                    run.end - run.start + 1)
+                mask[run.start:run.end +
+                     1] = [WHITE] * (run.end - run.start + 1)
 
 
 def adjust_not_overlapping_black_runs(mask, meta):
@@ -190,8 +189,8 @@ def rule_3_3_1(mask, meta):
     for idx in range(len(meta.blocks)):
         prev_block = meta.blocks[idx - 1] if idx > 0 else None
         block = meta.blocks[idx]
-        next_block = (meta.blocks[idx + 1]
-                      if idx + 1 < len(meta.blocks) else None)
+        next_block = (meta.blocks[idx +
+                                  1] if idx + 1 < len(meta.blocks) else None)
 
         if mask[block.start] != BLACK:
             continue
@@ -321,8 +320,8 @@ def rule_3_3_3_2(mask, meta):
     """
     # pylint: disable=invalid-name
     for idx in range(len(meta.blocks) - 1, -1, -1):
-        prev_block = meta.blocks[idx + 1] if idx + 1 < len(
-            meta.blocks) else None
+        prev_block = meta.blocks[idx +
+                                 1] if idx + 1 < len(meta.blocks) else None
         block = meta.blocks[idx]
 
         # if there's a previous block and it's overlapping then continue
@@ -343,8 +342,7 @@ def rule_3_3_3_2(mask, meta):
             break
 
 
-RULES = (fill_scattered_ranges,
-         adjust_ranges_based_on_white_cells,
+RULES = (fill_scattered_ranges, adjust_ranges_based_on_white_cells,
          adjust_not_overlapping_black_runs)
 
 __all__ = ('RULES', )

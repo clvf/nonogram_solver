@@ -20,14 +20,12 @@ class TestSolver(unittest.TestCase):
         """Test that no discrepacy occurs during the solving process."""
         err_in_model = []
         for test_file in [
-                os.path.join(
-                    os.path.dirname(__file__), os.pardir, 'examples', f)
+                os.path.join(os.path.dirname(__file__), os.pardir, 'examples',
+                             f)
                 for f in sorted(
-                        os.listdir(
-                            os.path.join(
-                                os.path.dirname(__file__),
-                                os.pardir,
-                                'examples')))
+                    os.listdir(
+                        os.path.join(os.path.dirname(__file__), os.pardir,
+                                     'examples')))
                 if fnmatch.fnmatch(f, '*.txt')
         ]:
             print(os.path.basename(test_file), end='')

@@ -18,11 +18,11 @@ WHITE = 32  # \x20: ascii ' '
 EMPTY = re.compile(r'^\s*$')
 COMMENT = re.compile(r'^\s*#.*$')
 
+
 def cleanse_puzzle(lines):
     """Delete emtpy lines and comments from the lines defining a puzzle"""
     return [
-        line
-        for line in lines
+        line for line in lines
         if not re.match(EMPTY, line) and not re.match(COMMENT, line)
     ]
 
@@ -31,7 +31,6 @@ class Raster():
     """
     Class representing the nonogram model.
     """
-
     def __init__(self, table, row_meta, col_meta):
         self.table = table
         self.width = len(table[0])

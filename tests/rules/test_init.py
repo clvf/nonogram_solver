@@ -76,8 +76,8 @@ class TestRules(unittest.TestCase):
         mask = bytearray([WHITE, UNKNOWN, UNKNOWN, WHITE])
         self.assertEqual([], rules._get_black_runs(mask))
 
-        mask = bytearray(
-            [BLACK, WHITE, BLACK, WHITE] + [BLACK] * 4 + [UNKNOWN, BLACK])
+        mask = bytearray([BLACK, WHITE, BLACK, WHITE] + [BLACK] * 4 +
+                         [UNKNOWN, BLACK])
         expected = [
             Block(start=0, end=0, length=1),
             Block(start=2, end=2, length=1),

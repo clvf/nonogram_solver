@@ -174,8 +174,8 @@ def fill_cells_based_on_boundary(mask, meta):
             # if an empty cell is found or we reached the wall and the
             # lower bound is less than the upper bound
             if (found_empty or m == 0) and lower_bound < upper_bound:
-                mask[lower_bound:upper_bound] = [BLACK] * (
-                    upper_bound - lower_bound)
+                mask[lower_bound:upper_bound] = [BLACK] * (upper_bound -
+                                                           lower_bound)
 
         found_empty = 0
         if minL > 0 and mask[i + 1] != BLACK and mask[i] == BLACK:
@@ -192,8 +192,8 @@ def fill_cells_based_on_boundary(mask, meta):
             # lower bound is less than the upper bound
             if (found_empty
                     or n == len(mask) - 1) and lower_bound < upper_bound:
-                mask[lower_bound:upper_bound] = [BLACK] * (
-                    upper_bound - lower_bound)
+                mask[lower_bound:upper_bound] = [BLACK] * (upper_bound -
+                                                           lower_bound)
 
 
 @nonogram.log_changes("R1.5")
@@ -226,11 +226,8 @@ def mark_boundary_if_possible(mask, meta):
                 mask[block.end + 1] = WHITE
 
 
-RULES = (fill_intersections,
-         check_spaces,
-         mark_white_cell_at_boundary,
-         mark_white_cell_bween_sgmts,
-         fill_cells_based_on_boundary,
+RULES = (fill_intersections, check_spaces, mark_white_cell_at_boundary,
+         mark_white_cell_bween_sgmts, fill_cells_based_on_boundary,
          mark_boundary_if_possible)
 
 __all__ = ('RULES', )

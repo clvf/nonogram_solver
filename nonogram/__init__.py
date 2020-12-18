@@ -19,10 +19,8 @@ def log_changes(rule):
     Decorator that logs the "trace" of the processing only if the wrapped
     function changed either the mask or the meta data.
     """
-
     def wrap(func):
         """Wrapper"""
-
         @functools.wraps(func)
         def wrapped_f(mask, meta):
             """The new (wrapped) func"""

@@ -7,3 +7,10 @@ clean:
 
 test:
 	@python3.8 -m unittest discover
+
+format:
+	@python3.8 -m yapf \
+		--style .style.yapf \
+		--recursive \
+		--in-place \
+		nonogram_solver.py nonogram tests

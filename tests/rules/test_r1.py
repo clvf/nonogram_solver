@@ -25,8 +25,8 @@ class TestR1(unittest.TestCase):
     def test_fill_intersections(self):
         # if the line is solved (no UNKNOWN) then there's nothing to do...
         self.assertIsNone(
-            r1.fill_intersections(
-                bytearray([BLACK, WHITE, BLACK]), Line(0, 0, [])))
+            r1.fill_intersections(bytearray([BLACK, WHITE, BLACK]),
+                                  Line(0, 0, [])))
 
         # block fills the whole line (row or column)
         mask = bytearray([UNKNOWN, UNKNOWN, UNKNOWN])
@@ -38,8 +38,8 @@ class TestR1(unittest.TestCase):
         mask = bytearray([UNKNOWN] * 5)
         r1.fill_intersections(mask,
                               Line(0, 5, [Block(start=0, end=4, length=4)]))
-        self.assertEqual(
-            bytearray([UNKNOWN, BLACK, BLACK, BLACK, UNKNOWN]), mask)
+        self.assertEqual(bytearray([UNKNOWN, BLACK, BLACK, BLACK, UNKNOWN]),
+                         mask)
 
         # one overlapping cell
         mask = bytearray([UNKNOWN] * 5)
@@ -65,51 +65,57 @@ class TestR1(unittest.TestCase):
         self.assertEqual(bytearray([WHITE] * 4), mask)
 
         mask = bytearray([UNKNOWN] * 4)
-        r1.check_spaces(mask,
-                        Line(size=4, idx=4,
-                             blocks=[Block(start=0, end=3, length=0)]))
+        r1.check_spaces(
+            mask, Line(size=4, idx=4, blocks=[Block(start=0, end=3,
+                                                    length=0)]))
         self.assertEqual(bytearray([WHITE] * 4), mask)
 
         # start of the first block > 0 (1)
         mask = bytearray([UNKNOWN] * 4)
-        r1.check_spaces(mask,
-                        Line(size=4, idx=0,
-                             blocks=[Block(start=1, end=3, length=2)]))
+        r1.check_spaces(
+            mask, Line(size=4, idx=0, blocks=[Block(start=1, end=3,
+                                                    length=2)]))
         self.assertEqual(bytearray([WHITE] + [UNKNOWN] * 3), mask)
 
         # end of the last block < size - 1 (2)
         mask = bytearray([UNKNOWN] * 6)
-        r1.check_spaces(mask,
-                        Line(size=6, idx=0, blocks=[
-                            Block(start=0, end=4, length=2),
-                            Block(start=3, end=4, length=1)
-                        ]))
+        r1.check_spaces(
+            mask,
+            Line(
+                size=6, idx=0, blocks=[
+                    Block(start=0, end=4, length=2),
+                    Block(start=3, end=4, length=1)
+                ]))
         self.assertEqual(bytearray([UNKNOWN] * 5 + [WHITE]), mask)
 
         # gap betwen the end and start of two subsequent blocks (3)
         mask = bytearray([UNKNOWN] * 7)
-        r1.check_spaces(mask,
-                        Line(size=7, idx=0, blocks=[
-                            Block(start=0, end=2, length=2),
-                            Block(start=4, end=6, length=1)
-                        ]))
-        self.assertEqual(
-            bytearray([UNKNOWN] * 3 + [WHITE] + [UNKNOWN] * 3), mask)
+        r1.check_spaces(
+            mask,
+            Line(
+                size=7, idx=0, blocks=[
+                    Block(start=0, end=2, length=2),
+                    Block(start=4, end=6, length=1)
+                ]))
+        self.assertEqual(bytearray([UNKNOWN] * 3 + [WHITE] + [UNKNOWN] * 3),
+                         mask)
 
         # no gap as they're joint subsequent blocks
         mask = bytearray([UNKNOWN] * 7)
-        r1.check_spaces(mask,
-                        Line(size=7, idx=0, blocks=[
-                            Block(start=0, end=3, length=2),
-                            Block(start=4, end=6, length=1)
-                        ]))
+        r1.check_spaces(
+            mask,
+            Line(
+                size=7, idx=0, blocks=[
+                    Block(start=0, end=3, length=2),
+                    Block(start=4, end=6, length=1)
+                ]))
         self.assertEqual(bytearray([UNKNOWN] * 7), mask)
 
     def test_mark_white_cell_at_boundary(self):
         # if the line is solved (no UNKNOWN) then there's nothing to do...
         self.assertIsNone(
-            r1.mark_white_cell_at_boundary(
-                bytearray([BLACK, WHITE, BLACK]), Line(0, 0, [])))
+            r1.mark_white_cell_at_boundary(bytearray([BLACK, WHITE, BLACK]),
+                                           Line(0, 0, [])))
 
         # START
         blocks = [
@@ -196,18 +202,18 @@ class TestR1(unittest.TestCase):
     def test_fill_cells_based_on_boundary(self):
         # if the line is solved (no UNKNOWN) then there's nothing to do...
         self.assertIsNone(
-            r1.fill_cells_based_on_boundary(
-                bytearray([BLACK, WHITE, BLACK]), Line(0, 0, [])))
+            r1.fill_cells_based_on_boundary(bytearray([BLACK, WHITE, BLACK]),
+                                            Line(0, 0, [])))
 
         # fill one cell on the right
         blocks = [
             Block(start=0, end=7, length=3),
             Block(start=4, end=12, length=4)
         ]
-        mask = bytearray(
-            [UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] + [UNKNOWN] * 7)
-        expected = bytearray(
-            [UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] * 2 + [UNKNOWN] * 6)
+        mask = bytearray([UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] +
+                         [UNKNOWN] * 7)
+        expected = bytearray([UNKNOWN] * 3 + [WHITE] + [UNKNOWN] +
+                             [BLACK] * 2 + [UNKNOWN] * 6)
 
         r1.fill_cells_based_on_boundary(mask,
                                         Line(size=13, idx=0, blocks=blocks))
@@ -218,10 +224,10 @@ class TestR1(unittest.TestCase):
             Block(start=5, end=12, length=3),
             Block(start=0, end=8, length=4)
         ]
-        mask = bytearray(
-            [UNKNOWN] * 7 + [BLACK] + [UNKNOWN] + [WHITE] + [UNKNOWN] * 3)
-        expected = bytearray(
-            [UNKNOWN] * 6 + [BLACK] * 2 + [UNKNOWN] + [WHITE] + [UNKNOWN] * 3)
+        mask = bytearray([UNKNOWN] * 7 + [BLACK] + [UNKNOWN] + [WHITE] +
+                         [UNKNOWN] * 3)
+        expected = bytearray([UNKNOWN] * 6 + [BLACK] * 2 + [UNKNOWN] +
+                             [WHITE] + [UNKNOWN] * 3)
 
         r1.fill_cells_based_on_boundary(mask, Line(size=9, idx=0,
                                                    blocks=blocks))
@@ -256,8 +262,8 @@ class TestR1(unittest.TestCase):
             Block(start=0, end=4, length=3),
             Block(start=7, end=12, length=2)
         ]
-        mask = bytearray(
-            [UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] + [UNKNOWN] * 7)
+        mask = bytearray([UNKNOWN] * 3 + [WHITE] + [UNKNOWN] + [BLACK] +
+                         [UNKNOWN] * 7)
 
         r1.fill_cells_based_on_boundary(mask,
                                         Line(size=13, idx=0, blocks=blocks))
@@ -267,8 +273,8 @@ class TestR1(unittest.TestCase):
     def test_mark_boundary_if_possible(self):
         # if the line is solved (no UNKNOWN) then there's nothing to do...
         self.assertIsNone(
-            r1.mark_boundary_if_possible(
-                bytearray([BLACK, WHITE, BLACK]), Line(0, 0, [])))
+            r1.mark_boundary_if_possible(bytearray([BLACK, WHITE, BLACK]),
+                                         Line(0, 0, [])))
 
         # fill one cell on the right
         blocks = [
@@ -278,8 +284,8 @@ class TestR1(unittest.TestCase):
             Block(start=8, end=13, length=3)
         ]
         mask = bytearray([UNKNOWN] * 5 + [BLACK] * 2 + [UNKNOWN] * 7)
-        expected = bytearray(
-            [UNKNOWN] * 4 + [WHITE] + [BLACK] * 2 + [WHITE] + [UNKNOWN] * 6)
+        expected = bytearray([UNKNOWN] * 4 + [WHITE] + [BLACK] * 2 + [WHITE] +
+                             [UNKNOWN] * 6)
 
         r1.mark_boundary_if_possible(mask, Line(size=9, idx=0, blocks=blocks))
         self.assertEqual(expected, mask)
