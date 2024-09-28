@@ -4,6 +4,7 @@ Module for the nonogram model.
 
 from functools import reduce
 import copy
+import itertools
 import os
 import re
 
@@ -196,3 +197,52 @@ class Raster():
         the params."""
         for cell_idx in range(len(col)):
             self.table[cell_idx][idx] = col[cell_idx]
+
+    def _count_unknowns(self):
+        """Return how many UNKNOWN fields are in the given row and column."""
+        r_lst = [[0, i, True] for i in range(self.height)]  # row list
+        c_lst = [[0, i, False] for i in range(self.width)]  # column list
+        for r_idx, row in enumerate(self.table):
+            cnt = 0
+            for c_idx, byte in enumerate(row):
+                if UNKNOWN == byte:
+                    cnt += 1
+                    c_lst[c_idx][0] += 1
+
+            r_lst[r_idx][0] = cnt
+
+        # drop elements (row/col) NOT having UNKNOWN fields
+        return itertools.chain([r for r in r_lst if r[0] > 0], [c for c in c_lst if c[0] > 0])
+
+    def rank_guess_opts(self):
+        """Rank the possible guesses ("guess options") by ranking the row/column
+        having the fewest UNKNOWN field as highest (returning first).
+        """
+        # sort by number of UNKNOWN
+        return sorted(self._count_unknowns(), key=lambda x: x[0])
+
+    
+
+    def make_guess(self, idx, is_row):
+        """Return a copy (clone) of self by changing an UNKNOWN field to BLACK
+        and then to WHITE at the selected index of the given row or column.
+        """
+        if is_row:
+            for i, byte in enumerate(self.table[idx]):
+                if UNKNOWN == byte:
+                    guess = copy.deepcopy(self)
+                    guess.table[idx][i] = BLACK
+                    yield guess
+                    guess = copy.deepcopy(self)
+                    guess.table[idx][i] = WHITE
+                    yield guess
+
+        else:
+            for i, row in enumerate(self.table):
+                if UNKNOWN == row[idx]:
+                    guess = copy.deepcopy(self)
+                    guess.table[i][idx] = BLACK
+                    yield guess
+                    guess = copy.deepcopy(self)
+                    guess.table[i][idx] = WHITE
+                    yield guess

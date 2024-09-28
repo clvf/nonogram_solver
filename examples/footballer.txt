@@ -1,3 +1,5 @@
+# Note: needs bifurcation (logical elimination does not result in a solution).
+
 20 20
 2
 1 2

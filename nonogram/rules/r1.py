@@ -3,7 +3,7 @@ Rules to determinde which cells to be colored or left empty.
 """
 
 import nonogram
-from nonogram import rules
+from nonogram import DiscrepancyInModel, rules
 from nonogram.raster import BLACK
 from nonogram.raster import UNKNOWN
 from nonogram.raster import WHITE
@@ -26,7 +26,9 @@ def fill_intersections(mask, meta):
     # pylint: disable=invalid-name
     for block in meta.blocks:
         u = (block.end - block.start + 1) - block.length
-        assert u >= 0, "u: " + str(u) + " blk: " + str(block)
+        # assert u >= 0, "u: " + str(u) + " blk: " + str(block)
+        if u < 0:
+            raise DiscrepancyInModel("u: " + str(u) + " blk: " + str(block))
 
         lb = block.start + u  # lower bound
         ub = block.end - u + 1  # upper bound

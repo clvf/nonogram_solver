@@ -4,7 +4,7 @@ Rules that refine ranges of blocks and color cells or let them empty.
 import logging
 
 import nonogram
-from nonogram import rules
+from nonogram import DiscrepancyInModel, rules
 from nonogram.raster import BLACK
 from nonogram.raster import WHITE
 
@@ -154,7 +154,9 @@ def adjust_ranges_based_on_white_cells(mask, meta):
                     rules._block_len_in_section(run, block) < block.length):
                 logging.debug("R3.2 step 5: mark run as white: %s", run)
                 for cell in mask[run.start:run.end + 1]:
-                    assert cell != BLACK, "R3.2: segment contains black cell"
+                    # assert cell != BLACK, "R3.2: segment contains black cell"
+                    if cell == BLACK:
+                        raise DiscrepancyInModel("R3.2: segment contains black cell")
 
                 # update mask
                 mask[run.start:run.end +

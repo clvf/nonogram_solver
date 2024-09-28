@@ -11,12 +11,19 @@ from nonogram.raster import Raster
 from nonogram import solver
 
 
+def repr_solution(solution, bmp_file):
+    """Represent solution."""
+    print(str(solution), end='')
+    if bmp_file:
+        solution.to_bitmap(bmp_file)
+
+
 def main(args=None):
     """
     Read the puzzle from the input file and start solving it.
     """
     logging.basicConfig(format='%(message)s',
-                        level=logging.DEBUG if args.debug else logging.WARNING)
+                        level=logging.DEBUG if args.debug else logging.INFO)
     with open(args.input_file, 'r') as inp:
         # TODO: this is ugly
         if args.format_nin:
@@ -26,14 +33,21 @@ def main(args=None):
 
         solution = solver.solve(raster)
 
-        if not solution:
-            print("Program couldn't find any solution.")
-            logging.debug(str(raster))
-            sys.exit(2)
+        if solution:
+            repr_solution(solution, args.bmp_file)
+            sys.exit(0)
 
-        print(str(solution), end='')
-        if args.bmp_file:
-            solution.to_bitmap(args.bmp_file)
+        logging.debug("%s", raster)
+        logging.info("No solution after pure logical elimination. Bifurcating...\n")
+        # logging.debug(raster.rank_guess_opts())
+
+        solution = solver.bifurcate(raster)
+
+        if solution:
+            repr_solution(solution, args.bmp_file)
+            sys.exit(0)
+
+        sys.exit(1)
 
 
 if __name__ == '__main__':

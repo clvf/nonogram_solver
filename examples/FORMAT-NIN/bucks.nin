@@ -1,7 +1,7 @@
 # https://webpbn.com/play.cgi?id=27
 # exported via: https://webpbn.com/export.cgi  (.NIN file format)
 # 
-# Solution would need bifurcation that is not (yet?) implemented.
+# Note: needs bifurcation (logical elimination does not result in a solution).
 
 27 23
 11

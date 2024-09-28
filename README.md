@@ -1,7 +1,12 @@
 # Nonogram Solver
 
-The program solves nonograms whose solution can be find by logical
-elimination. (Ie. those that don't require guessing or bifurcation.)
+The program solves nonograms by performing logical elimination first and doing
+guesswork/bifurcation if needed.
+
+***
+Bifurcation: at some puzzles the possibilities as to which cell mark as black or white
+cannot be narrowed down further so one of the possibilities should be explored until a
+discrepancy found or the puzzle is solved.
 
 ## Usage
 
@@ -16,11 +21,8 @@ X X X
 X XXX
 ```
 
-Note that python 3.7 or later is required because of the use of
-[dataclasses](https://docs.python.org/3/library/dataclasses.html).
-
 If the program didn't find a solution then it's worth to pass the `--debug`
-option on the command line so you can see how far it got:
+option on the command line so you can see how far it got.
 
 ```bash
 $ nonogram-solver.py examples/smiley.txt --debug
@@ -38,11 +40,6 @@ Program couldn't find any solution.
  3 .. .. (0<->1|len: 1); (3<->4|len: 1)
  4 ..X.. (0<->4|len: 3)
 ```
-
-BTW the puzzle above would require bifurcation for the solution because the
-possibilities as to which cell mark as black or white cannot be narrowed down
-further so one of the possibilities should be explored until a discrepancy
-found or the puzzle is solved.
 
 ## Puzzle Input Format
 
@@ -134,11 +131,13 @@ XX  XXXXXXXXXXXXXXXX
   No. Speed was not a concern during the implementation. It solves a 100x100
   puzzle within 12 seconds on a @2.53GHz Inter i3 CPU.
 
-* What if I need a solver that do bifurcation?
+* Where do I find other implementations?
 
-  I suggest checking
-  [Dr. Steven Simpson's excellent nonogram solver](http://scc-forge.lancaster.ac.uk/open/simpsons/software/pkg-nonowimp.htmlz.en-GB). It's fast, portable and I assume that it can deal with all the solvable
-  puzzles.
+  I suggest checking [Jan Wolter's page](https://webpbn.com/survey/). There are plenty
+  of excellent solvers listed on the survey page and you can find a plethora of
+  puzzles there as well. You can feed in nonograms from the page if you
+  [export them](https://webpbn.com/export.cgi) in ".NIN" format and call
+  `nonogra-solver.py --format-nin <puzzle.nin>`.
 
 * What are the rules that you're referring to in the code?
 
