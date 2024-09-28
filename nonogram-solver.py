@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python3
 """
 A program that tries to solve nonograms.
 """
@@ -18,7 +18,12 @@ def main(args=None):
     logging.basicConfig(format='%(message)s',
                         level=logging.DEBUG if args.debug else logging.WARNING)
     with open(args.input_file, 'r') as inp:
-        raster = Raster.from_file(inp)
+        # TODO: this is ugly
+        if args.format_nin:
+            raster = Raster.from_nin_file(inp)
+        else:
+            raster = Raster.from_file(inp)
+
         solution = solver.solve(raster)
 
         if not solution:
@@ -39,6 +44,8 @@ if __name__ == '__main__':
         '--bmp', dest='bmp_file', help='write the solution to the specified'
         ' file in BMP format')
     parser.add_argument('--debug', help='enable debug logs',
+                        action='store_true')
+    parser.add_argument('--format-nin', help='input file has "NIN" format',
                         action='store_true')
 
     main(args=parser.parse_args())

@@ -6,8 +6,8 @@ elimination. (Ie. those that don't require guessing or bifurcation.)
 ## Usage
 
 ```bash
-$ nonogram_solver.py --help
-$ nonogram_solver.py examples/house.txt
+$ nonogram-solver.py --help
+$ nonogram-solver.py examples/house.txt
 
   X
  XXX
@@ -23,7 +23,7 @@ If the program didn't find a solution then it's worth to pass the `--debug`
 option on the command line so you can see how far it got:
 
 ```bash
-$ nonogram_solver.py examples/smiley.txt --debug
+$ nonogram-solver.py examples/smiley.txt --debug
 
 Program couldn't find any solution.
    +---- (3<->4|len: 1)
@@ -63,8 +63,8 @@ and lines starting with comment (#) ignored.
 
 This puzzle:
 ```
-               1   
-         3 2 5 2 3 
+               2   
+         3 2 5 1 3 
         +-+-+-+-+-+
       1 | | | | | |
         +-+-+-+-+-+
@@ -96,6 +96,35 @@ should be represented as follows:
 5
 1 1 1
 1 3
+```
+
+You can feed in puzzles from https://webpbn.com exported via
+https://webpbn.com/export.cgi. Make sure you select ".NIN" (or ".MK") file
+format at export. Include `--format-nin` at the command line:
+
+```bash
+$ nonogram-solver.py examples/NIN_FORMAT/cat.nin --format-nin
+
+ XX
+ XX
+ X
+ X
+ X     XXX
+XX    XXXXX
+X    XXXXXXX   X   X
+X    XXXXXXXX  XX XX
+X   XXXXXXXXX  XXXXX
+XX  XXXXXXXXXXXXXXXX
+ X XXXXXXXXXXXXXXXXX
+ XXXXXXX XXXXXXXXXXX
+  XXXXX   XXXXX XXX
+  XXXXX   XXXX
+   XXX     XXX
+   XX      XX
+  XX        X
+  X         X
+  XX        XX
+  XX        XX
 ```
 
 ## FAQ

@@ -72,6 +72,48 @@ class Raster():
 
         return cls(**dict(table=table, row_meta=row_meta, col_meta=col_meta))
 
+    @classmethod
+    def from_nin_file(cls, file_):
+        """Return a Raster object modelling the puzzle description passed in as
+        NIN format (see: https://webpbn.com/export.cgi)
+
+        Ncolumn Nrows
+        1st row, elements from left to right
+        ...
+        1st column, elements from top to bottom
+        ...
+        """
+        file_content = cleanse_puzzle(file_.readlines())
+        header = file_content.pop(0).split()
+        (width, height) = (int(header[0]), int(header[1]))
+
+        table = [
+            bytearray((UNKNOWN for j in range(width))) for i in range(height)
+        ]
+
+        row_meta = list()
+        col_meta = list()
+
+        for idx in range(len(file_content)):
+            # it's a row if idx < height
+            # and a column if idx >= height
+            is_row = True if idx < height else False
+            size = height if not is_row else width
+            meta_idx = idx if is_row else idx - height
+
+            blocks = [
+                block.Block(0, size - 1, int(length))
+                for length in file_content[idx].split()
+            ]
+
+            if is_row:
+                row_meta.append(line.Row(size, meta_idx, blocks))
+            else:
+                col_meta.append(line.Column(size, meta_idx, blocks))
+
+        return cls(**dict(table=table, row_meta=row_meta, col_meta=col_meta))
+
+
     def __str__(self):
         repr_ = ""
         offset = "   "
