@@ -19,6 +19,29 @@ $ nonogram-solver.py examples/house.txt
 XXXXX
 X X X
 X XXX
+
+$ nonogram-solver.py examples/NIN_FORMAT/cat.nin --format-nin
+
+ XX
+ XX
+ X
+ X
+ X     XXX
+XX    XXXXX
+X    XXXXXXX   X   X
+X    XXXXXXXX  XX XX
+X   XXXXXXXXX  XXXXX
+XX  XXXXXXXXXXXXXXXX
+ X XXXXXXXXXXXXXXXXX
+ XXXXXXX XXXXXXXXXXX
+  XXXXX   XXXXX XXX
+  XXXXX   XXXX
+   XXX     XXX
+   XX      XX
+  XX        X
+  X         X
+  XX        XX
+  XX        XX
 ```
 
 If the program didn't find a solution then it's worth to pass the `--debug`
@@ -27,7 +50,6 @@ option on the command line so you can see how far it got.
 ```bash
 $ nonogram-solver.py examples/smiley.txt --debug
 
-Program couldn't find any solution.
    +---- (3<->4|len: 1)
    |+--- (1<->1|len: 1); (3<->4|len: 1)
    ||+-- (4<->4|len: 1)
@@ -101,27 +123,6 @@ format at export. Include `--format-nin` at the command line:
 
 ```bash
 $ nonogram-solver.py examples/NIN_FORMAT/cat.nin --format-nin
-
- XX
- XX
- X
- X
- X     XXX
-XX    XXXXX
-X    XXXXXXX   X   X
-X    XXXXXXXX  XX XX
-X   XXXXXXXXX  XXXXX
-XX  XXXXXXXXXXXXXXXX
- X XXXXXXXXXXXXXXXXX
- XXXXXXX XXXXXXXXXXX
-  XXXXX   XXXXX XXX
-  XXXXX   XXXX
-   XXX     XXX
-   XX      XX
-  XX        X
-  X         X
-  XX        XX
-  XX        XX
 ```
 
 ## FAQ
@@ -137,7 +138,7 @@ XX  XXXXXXXXXXXXXXXX
   of excellent solvers listed on the survey page and you can find a plethora of
   puzzles there as well. You can feed in nonograms from the page if you
   [export them](https://webpbn.com/export.cgi) in ".NIN" format and call
-  `nonogra-solver.py --format-nin <puzzle.nin>`.
+  `nonogram-solver.py --format-nin <puzzle.nin>`.
 
 * What are the rules that you're referring to in the code?
 
