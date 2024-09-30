@@ -216,10 +216,10 @@ class Raster():
 
     def rank_guess_opts(self):
         """Rank the possible guesses ("guess options") by ranking the row/column
-        having the fewest UNKNOWN field as highest (returning first).
+        having the most UNKNOWN field as highest (returning first).
         """
-        # sort by number of UNKNOWN
-        return sorted(self._count_unknowns(), key=lambda x: x[0])
+        # sort by number of UNKNOWN desc
+        return sorted(self._count_unknowns(), key=lambda x: -1 * x[0])
 
     
 

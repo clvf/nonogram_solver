@@ -39,7 +39,9 @@ def main(args=None):
 
         logging.debug("%s", raster)
         logging.info("No solution after pure logical elimination. Bifurcating...\n")
-        # logging.debug(raster.rank_guess_opts())
+
+        if args.no_bifurcation:
+            sys.exit(1)
 
         solution = solver.bifurcate(raster)
 
@@ -60,6 +62,8 @@ if __name__ == '__main__':
     parser.add_argument('--debug', help='enable debug logs',
                         action='store_true')
     parser.add_argument('--format-nin', help='input file has "NIN" format',
+                        action='store_true')
+    parser.add_argument('--no-bifurcation', help='Try to solve the puzzle only by logical elimination. Do not make guesses.',
                         action='store_true')
 
     main(args=parser.parse_args())

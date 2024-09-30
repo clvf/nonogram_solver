@@ -154,9 +154,15 @@ def adjust_ranges_based_on_white_cells(mask, meta):
                     rules._block_len_in_section(run, block) < block.length):
                 logging.debug("R3.2 step 5: mark run as white: %s", run)
                 for cell in mask[run.start:run.end + 1]:
-                    # assert cell != BLACK, "R3.2: segment contains black cell"
+                    # assert cell != BLACK, ("R3.2: segment contains black cell - '" 
+                    # + mask.decode("ascii") + "' '" + mask[run.start:run.end + 1].decode("ascii") 
+                    # + "', meta: " + str(meta))
                     if cell == BLACK:
-                        raise DiscrepancyInModel("R3.2: segment contains black cell")
+                        raise DiscrepancyInModel("R3.2: segment contains black cell - "
+                                                 "'{}' run: [{}:{}], meta: {}".format(
+                                                 mask.decode("ascii"),
+                                                 run.start, run.end+1,
+                                                 meta))
 
                 # update mask
                 mask[run.start:run.end +

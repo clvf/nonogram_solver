@@ -3,6 +3,7 @@ Implementation of the logic to solve the nonogram.
 """
 
 import copy
+import logging
 
 from nonogram.rules import r1
 from nonogram.rules import r2
@@ -27,6 +28,7 @@ def solve(raster):
 
             if raster.update_row(mask=mask, idx=meta.idx) or meta != orig_meta:
                 cells_changed = True
+            logging.debug("%s", raster)
 
         for meta in raster.col_meta:
             mask = raster.get_col(meta.idx)
@@ -36,6 +38,7 @@ def solve(raster):
 
             if raster.update_col(mask=mask, idx=meta.idx) or meta != orig_meta:
                 cells_changed = True
+            logging.debug("%s", raster)
 
     if raster.is_solved():
         return Solution(raster.table)
@@ -47,6 +50,19 @@ def linesolve(mask, meta):
     """Rule based elimination on the received parameters."""
     for func in RULE_FUNCS:
         func(mask, meta)
+        for block in meta.blocks:
+            u = (block.end - block.start + 1) - block.length
+            #assert u >= 0, "u: " + str(u) + " blk: " + str(block) + " meta: " + str(meta)
+            #assert block.start >= 0, "block.start < 0, blk: " + str(block)
+            #assert block.end < meta.size, "block ends outside of the boundary, blk: " + str(block)
+            if u < 0:
+                raise DiscrepancyInModel("u: " + str(u) + " blk: " + str(block) + " meta: " + str(meta))
+
+            if block.start < 0:
+                raise DiscrepancyInModel("block.start < 0, meta: " + str(meta))
+
+            if block.end >= meta.size:
+                raise DiscrepancyInModel("block ends outside of the boundary, meta: " + str(meta))
 
 def bifurcate(raster):
     """Makes a guess, applies logical elimination and backtracks if discrepancy
@@ -56,10 +72,15 @@ def bifurcate(raster):
         for guessed_raster in raster.make_guess(idx, is_row):
             try:
                 solution = solve(guessed_raster)
-            # TODO: is catching _all_ kind of exception right here?
-            except:
+            except DiscrepancyInModel as e:
+                logging.debug("Discrepancy detected while bifurcating: %s", e)
+                logging.debug("%s", guessed_raster)
                 # this guess lead to a failure. try the next guess
                 continue
+            except:
+                logging.error("%s", guessed_raster)
+                raise
+
 
             # Logical elimination on the guessed raster didn't end in discrepancy.
             # Is the puzzl solved?

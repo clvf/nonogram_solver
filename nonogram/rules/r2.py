@@ -75,6 +75,8 @@ def narrow_boundaries(mask, meta):
                     # or if black segment only belongs to the former black runs
                     or not rules._is_segment_in_block_range(
                         black_segment, meta.blocks[block_idx + 1:]))
+                    # and new start would be within boundaries
+                    and black_segment.end + 2 < meta.size - 1 - block.length
                     # and it is worth the change
                     and block.start < black_segment.end + 2):
                 block.start = black_segment.end + 2
@@ -82,6 +84,8 @@ def narrow_boundaries(mask, meta):
             # if black segment only belongs to the later black runs
             if (not rules._is_segment_in_block_range(black_segment,
                                                      meta.blocks[:block_idx])
+                    # and new start would be within boundaries
+                    and black_segment.start - 2 - block.length >= 0
                     # and it is worth the change
                     and black_segment.start - 2 < block.end):
                 block.end = black_segment.start - 2
