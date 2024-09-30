@@ -52,17 +52,22 @@ def linesolve(mask, meta):
         func(mask, meta)
         for block in meta.blocks:
             u = (block.end - block.start + 1) - block.length
-            #assert u >= 0, "u: " + str(u) + " blk: " + str(block) + " meta: " + str(meta)
-            #assert block.start >= 0, "block.start < 0, blk: " + str(block)
-            #assert block.end < meta.size, "block ends outside of the boundary, blk: " + str(block)
+            # assert u >= 0, "u: " + str(u) + " blk: " + str(block) + " meta: " + str(meta)
+            # assert block.start >= 0, "block.start < 0, blk: " + str(block)
+            # assert block.end < meta.size, "block ends outside of the boundary, blk: " + str(block)
             if u < 0:
-                raise DiscrepancyInModel("u: " + str(u) + " blk: " + str(block) + " meta: " + str(meta))
+                raise DiscrepancyInModel(
+                    "u: " + str(u) + " blk: " + str(block) + " meta: " + str(meta)
+                )
 
             if block.start < 0:
                 raise DiscrepancyInModel("block.start < 0, meta: " + str(meta))
 
             if block.end >= meta.size:
-                raise DiscrepancyInModel("block ends outside of the boundary, meta: " + str(meta))
+                raise DiscrepancyInModel(
+                    "block ends outside of the boundary, meta: " + str(meta)
+                )
+
 
 def bifurcate(raster):
     """Makes a guess, applies logical elimination and backtracks if discrepancy
@@ -80,7 +85,6 @@ def bifurcate(raster):
             except:
                 logging.error("%s", guessed_raster)
                 raise
-
 
             # Logical elimination on the guessed raster didn't end in discrepancy.
             # Is the puzzl solved?

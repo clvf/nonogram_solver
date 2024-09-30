@@ -6,9 +6,11 @@ import sys
 import unittest
 
 SCRIPT_DIR = os.path.dirname(
-    os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+    os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__)))
+)
 sys.path.append(
-    os.path.normpath(os.path.join(SCRIPT_DIR, os.path.pardir, os.path.pardir)))
+    os.path.normpath(os.path.join(SCRIPT_DIR, os.path.pardir, os.path.pardir))
+)
 
 # pylint: disable=wrong-import-position,missing-docstring
 from nonogram.raster import BLACK
@@ -22,21 +24,26 @@ from nonogram.rules import r3
 
 class TestR3(unittest.TestCase):
     def test_fill_scattered_ranges(self):
-        mask = bytearray([UNKNOWN] * 4 + [BLACK] + [UNKNOWN] + [BLACK] +
-                         [UNKNOWN] * 6)
+        mask = bytearray([UNKNOWN] * 4 + [BLACK] + [UNKNOWN] + [BLACK] + [UNKNOWN] * 6)
         meta = Line(
-            size=13, idx=0, blocks=[
+            size=13,
+            idx=0,
+            blocks=[
                 Block(start=0, end=3, length=1),
                 Block(start=2, end=8, length=4),
-                Block(start=7, end=12, length=3)
-            ])
+                Block(start=7, end=12, length=3),
+            ],
+        )
         expected_mask = bytearray([UNKNOWN] * 4 + [BLACK] * 3 + [UNKNOWN] * 6)
         expected_meta = Line(
-            size=13, idx=0, blocks=[
+            size=13,
+            idx=0,
+            blocks=[
                 Block(start=0, end=3, length=1),
                 Block(start=3, end=7, length=4),
-                Block(start=7, end=12, length=3)
-            ])
+                Block(start=7, end=12, length=3),
+            ],
+        )
 
         r3.fill_scattered_ranges(mask, meta)
         self.assertEqual(expected_mask, mask)
@@ -50,22 +57,25 @@ class TestR3(unittest.TestCase):
 
         expected_mask = copy(mask)
 
-        expected_meta = Line(size=11, idx=0,
-                             blocks=[Block(start=2, end=8, length=5)])
+        expected_meta = Line(size=11, idx=0, blocks=[Block(start=2, end=8, length=5)])
 
         r3.fill_scattered_ranges(mask, meta)
         self.assertEqual(expected_mask, mask)
         self.assertEqual(expected_meta, meta)
 
         # '.... X .. '
-        mask = bytearray([UNKNOWN] * 4 + [WHITE] + [BLACK] + [WHITE] +
-                         [UNKNOWN] * 2 + [WHITE])
+        mask = bytearray(
+            [UNKNOWN] * 4 + [WHITE] + [BLACK] + [WHITE] + [UNKNOWN] * 2 + [WHITE]
+        )
         meta = Line(
-            size=10, idx=0, blocks=[
+            size=10,
+            idx=0,
+            blocks=[
                 Block(start=0, end=5, length=1),
                 Block(start=2, end=7, length=1),
-                Block(start=4, end=9, length=1)
-            ])
+                Block(start=4, end=9, length=1),
+            ],
+        )
 
         expected_mask = copy(mask)
         expected_meta = deepcopy(meta)
@@ -76,15 +86,17 @@ class TestR3(unittest.TestCase):
         # bytearray(b'X  X .....')
         # 2 runs in one block's range but filling them would be longer
         # than the block's length
-        mask = bytearray([BLACK] + [WHITE] * 2 + [BLACK] + [WHITE] +
-                         [UNKNOWN] * 5)
+        mask = bytearray([BLACK] + [WHITE] * 2 + [BLACK] + [WHITE] + [UNKNOWN] * 5)
         meta = Line(
-            size=10, idx=0, blocks=[
+            size=10,
+            idx=0,
+            blocks=[
                 Block(start=0, end=3, length=1),
                 Block(start=2, end=5, length=1),
                 Block(start=5, end=7, length=1),
                 Block(start=6, end=9, length=1),
-            ])
+            ],
+        )
         expected_mask = copy(mask)
         expected_meta = deepcopy(meta)
 
@@ -93,13 +105,17 @@ class TestR3(unittest.TestCase):
         self.assertEqual(expected_meta, meta)
 
         # bytearray(b'  X..XX...')
-        mask = bytearray([WHITE] * 2 + [BLACK] + [UNKNOWN] * 2 + [BLACK] * 2 +
-                         [UNKNOWN] * 3)
+        mask = bytearray(
+            [WHITE] * 2 + [BLACK] + [UNKNOWN] * 2 + [BLACK] * 2 + [UNKNOWN] * 3
+        )
         meta = Line(
-            size=10, idx=0, blocks=[
+            size=10,
+            idx=0,
+            blocks=[
                 Block(start=0, end=3, length=1),
                 Block(start=2, end=9, length=5),
-            ])
+            ],
+        )
         expected_mask = copy(mask)
         expected_meta = deepcopy(meta)
 
@@ -108,5 +124,5 @@ class TestR3(unittest.TestCase):
         self.assertEqual(expected_meta, meta)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

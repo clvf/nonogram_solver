@@ -6,7 +6,8 @@ import sys
 import unittest
 
 SCRIPT_DIR = os.path.dirname(
-    os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+    os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__)))
+)
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, os.path.pardir)))
 
 # pylint: disable=wrong-import-position
@@ -23,7 +24,8 @@ from nonogram.raster.line import Row
 class TestRaster(unittest.TestCase):
     # pylint: disable=protected-access,missing-docstring
     def test_from_file(self):
-        spec = io.StringIO("""
+        spec = io.StringIO(
+            """
 10 5
 # columns:
 1
@@ -45,43 +47,51 @@ class TestRaster(unittest.TestCase):
 8 1
 3 1 1
 1 1 1
-""")
+"""
+        )
         raster = Raster.from_file(spec)
-        self.assertEqual(raster.col_meta, [
-            Column(5, 0, [Block(0, 4, 1)]),
-            Column(5, 1, [Block(0, 4, 3)]),
-            Column(5, 2, [Block(0, 4, 2)]),
-            Column(5, 3, [Block(0, 4, 3)]),
-            Column(5, 4, [Block(0, 4, 1)]),
-            Column(5, 5, [Block(0, 4, 1)]),
-            Column(5, 6, [Block(0, 4, 1)]),
-            Column(5, 7, [Block(0, 4, 3)]),
-            Column(5, 8, [Block(0, 4, 1), Block(0, 4, 1)]),
-            Column(5, 9, [Block(0, 4, 3)])
-        ])
-        self.assertEqual(raster.table, [
-            bytearray(b'..........'),
-            bytearray(b'..........'),
-            bytearray(b'..........'),
-            bytearray(b'..........'),
-            bytearray(b'..........')
-        ])
-        self.assertEqual(raster.row_meta, [
-            Row(10, 0, [Block(0, 9, 1)]),
-            Row(10, 1, [Block(0, 9, 1), Block(0, 9, 1)]),
-            Row(10, 2, [Block(0, 9, 8), Block(0, 9, 1)]),
-            Row(10, 3, [Block(0, 9, 3),
-                        Block(0, 9, 1),
-                        Block(0, 9, 1)]),
-            Row(10, 4, [Block(0, 9, 1),
-                        Block(0, 9, 1),
-                        Block(0, 9, 1)])
-        ])
+        self.assertEqual(
+            raster.col_meta,
+            [
+                Column(5, 0, [Block(0, 4, 1)]),
+                Column(5, 1, [Block(0, 4, 3)]),
+                Column(5, 2, [Block(0, 4, 2)]),
+                Column(5, 3, [Block(0, 4, 3)]),
+                Column(5, 4, [Block(0, 4, 1)]),
+                Column(5, 5, [Block(0, 4, 1)]),
+                Column(5, 6, [Block(0, 4, 1)]),
+                Column(5, 7, [Block(0, 4, 3)]),
+                Column(5, 8, [Block(0, 4, 1), Block(0, 4, 1)]),
+                Column(5, 9, [Block(0, 4, 3)]),
+            ],
+        )
+        self.assertEqual(
+            raster.table,
+            [
+                bytearray(b".........."),
+                bytearray(b".........."),
+                bytearray(b".........."),
+                bytearray(b".........."),
+                bytearray(b".........."),
+            ],
+        )
+        self.assertEqual(
+            raster.row_meta,
+            [
+                Row(10, 0, [Block(0, 9, 1)]),
+                Row(10, 1, [Block(0, 9, 1), Block(0, 9, 1)]),
+                Row(10, 2, [Block(0, 9, 8), Block(0, 9, 1)]),
+                Row(10, 3, [Block(0, 9, 3), Block(0, 9, 1), Block(0, 9, 1)]),
+                Row(10, 4, [Block(0, 9, 1), Block(0, 9, 1), Block(0, 9, 1)]),
+            ],
+        )
 
     def test_is_solved(self):
         raster = Raster(
             table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
-            row_meta=[], col_meta=[])
+            row_meta=[],
+            col_meta=[],
+        )
         self.assertEqual(False, raster.is_solved())
 
         raster.table = [bytearray((BLACK for i in range(2)))]
@@ -96,14 +106,18 @@ class TestRaster(unittest.TestCase):
     def test_get_row(self):
         raster = Raster(
             table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
-            row_meta=[], col_meta=[])
+            row_meta=[],
+            col_meta=[],
+        )
         raster.table[0] = bytearray([BLACK, WHITE])
         self.assertEqual(bytearray([BLACK, WHITE]), raster.get_row(0))
 
     def test_replace_row(self):
         raster = Raster(
             table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
-            row_meta=[], col_meta=[])
+            row_meta=[],
+            col_meta=[],
+        )
 
         row = bytearray([BLACK, WHITE])
         raster._replace_row(row, 0)
@@ -114,7 +128,9 @@ class TestRaster(unittest.TestCase):
     def test_get_col(self):
         raster = Raster(
             table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
-            row_meta=[], col_meta=[])
+            row_meta=[],
+            col_meta=[],
+        )
 
         for i in range(3):
             raster.table[i][0] = BLACK
@@ -123,7 +139,9 @@ class TestRaster(unittest.TestCase):
     def test_replace_col(self):
         raster = Raster(
             table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
-            row_meta=[], col_meta=[])
+            row_meta=[],
+            col_meta=[],
+        )
 
         col = bytearray([BLACK, WHITE, BLACK])
         raster._replace_col(col, 1)
@@ -141,8 +159,10 @@ class TestRaster(unittest.TestCase):
 
         mask = bytearray((UNKNOWN, WHITE, WHITE, BLACK))
         # change some cells and return their indexes
-        self.assertEqual((bytearray((BLACK, WHITE, WHITE, BLACK)), [1, 3]),
-                         raster._update_list(rec, mask))
+        self.assertEqual(
+            (bytearray((BLACK, WHITE, WHITE, BLACK)), [1, 3]),
+            raster._update_list(rec, mask),
+        )
 
         # if rec and mask differ in "known" cells that's a discrepancy
         mask[0] = WHITE
@@ -152,7 +172,9 @@ class TestRaster(unittest.TestCase):
     def test_update_row(self):
         raster = Raster(
             table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
-            row_meta=[], col_meta=[])
+            row_meta=[],
+            col_meta=[],
+        )
 
         mask = bytearray([BLACK, WHITE])
         self.assertEqual([0, 1], raster.update_row(mask=mask, idx=0))
@@ -161,12 +183,14 @@ class TestRaster(unittest.TestCase):
     def test_update_col(self):
         raster = Raster(
             table=[bytearray((UNKNOWN for j in range(2))) for i in range(3)],
-            row_meta=[], col_meta=[])
+            row_meta=[],
+            col_meta=[],
+        )
 
         mask = bytearray([BLACK, WHITE, UNKNOWN])
         self.assertEqual([0, 1], raster.update_col(mask=mask, idx=0))
         self.assertEqual(mask, raster.get_col(0))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -16,10 +16,11 @@ BPP = 24
 
 
 @dataclasses.dataclass
-class Solution():
+class Solution:
     """
     Class representing the solution of a puzzle.
     """
+
     # pylint: disable=too-few-public-methods
     table: typing.List[typing.List[int]]
 
@@ -29,16 +30,16 @@ class Solution():
 
     def __str__(self):
         """String representation of the internal model."""
-        return "\r\n".join(row.decode('ascii') for row in self.table) + "\r\n"
+        return "\r\n".join(row.decode("ascii") for row in self.table) + "\r\n"
 
     def _compile_bmp_header(self):
         """
         Returns the BMP header.
         """
         return struct.pack(
-            '<cc4IiiHH6I',
-            b'B',  # identifies the file type
-            b'M',  # identifies the file type
+            "<cc4IiiHH6I",
+            b"B",  # identifies the file type
+            b"M",  # identifies the file type
             0,  # size of the file
             0,  # application specific unused field
             54,  # offset: 14 + 40 (BMP header + DIB header)
@@ -54,7 +55,7 @@ class Solution():
             0,  # horisontal resolution
             0,  # vertical resolution
             0,  # number of colors in the palette
-            0  # all colors are important
+            0,  # all colors are important
         )
 
     def _pack_bmp_pixels(self):
@@ -73,11 +74,14 @@ class Solution():
                 if cell == raster.BLACK:
                     start_idx = (y * rowsize) + x * color_depth
                     try:
-                        pixel_array[start_idx:start_idx + color_depth] = BLACK
+                        pixel_array[start_idx : start_idx + color_depth] = BLACK
                     except IndexError as e:
                         logging.exception(
-                            'BMP coordinates x,y: %d,%d; '
-                            'start idx: %d', x, y, start_idx)
+                            "BMP coordinates x,y: %d,%d; " "start idx: %d",
+                            x,
+                            y,
+                            start_idx,
+                        )
                         raise e
             y += 1
 

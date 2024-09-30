@@ -1,6 +1,7 @@
 """
 Rules that refine ranges of blocks and color cells or let them empty.
 """
+
 import logging
 
 import nonogram
@@ -23,8 +24,9 @@ def fill_scattered_ranges(mask, meta):
 
     """
     for block in meta.blocks:
-        runs = sorted(rules._runs_in_block_range(block, mask),
-                      key=lambda block: block.start)
+        runs = sorted(
+            rules._runs_in_block_range(block, mask), key=lambda block: block.start
+        )
 
         if not runs:
             continue
@@ -37,13 +39,14 @@ def fill_scattered_ranges(mask, meta):
         # ie. it is not covered by any of the other blocks...
         # TODO: check whether there's a covering block between (first,
         # last) not covering these two
-        if not rules._covering_blocks(
-                blocks_wo_this, first) and not rules._covering_blocks(
-                    blocks_wo_this,
-                    last) and block.length >= (last - first + 1):
+        if (
+            not rules._covering_blocks(blocks_wo_this, first)
+            and not rules._covering_blocks(blocks_wo_this, last)
+            and block.length >= (last - first + 1)
+        ):
             # update mask
             if first < last:
-                mask[first:last + 1] = [BLACK] * (last - first + 1)
+                mask[first : last + 1] = [BLACK] * (last - first + 1)
 
             # len of the run
             runlen = block.length - (last - first + 1)
@@ -87,25 +90,30 @@ def adjust_ranges_based_on_white_cells(mask, meta):
 
     non_white_runs = rules._get_non_white_runs(mask)
 
-    logging.debug("R3.2 non_white_runs: [%s]", "; ".join(
-        (str(block) for block in non_white_runs)))
+    logging.debug(
+        "R3.2 non_white_runs: [%s]", "; ".join((str(block) for block in non_white_runs))
+    )
 
     for block in meta.blocks:
         # iterate only over those runs that start or end within this block
         covered_runs = [
-            r for r in non_white_runs
-            if block.start <= r.end and block.end >= r.start
+            r for r in non_white_runs if block.start <= r.end and block.end >= r.start
         ]
-        logging.debug("R3.2 block: %s, covered_runs: [%s]", block, "; ".join(
-            (str(block) for block in covered_runs)))
+        logging.debug(
+            "R3.2 block: %s, covered_runs: [%s]",
+            block,
+            "; ".join((str(block) for block in covered_runs)),
+        )
 
         # Step 1.
         for run in covered_runs:
             # if the run starts outside of the boundaries of this block
             # but its "within boundary" length is long enough
             # then we cannot narrow further the start of the block
-            if (run.start < block.start and
-                    rules._block_len_in_section(run, block) >= block.length):
+            if (
+                run.start < block.start
+                and rules._block_len_in_section(run, block) >= block.length
+            ):
                 break
 
             # Step 2.
@@ -122,8 +130,10 @@ def adjust_ranges_based_on_white_cells(mask, meta):
             # if the run ends outside of the boundaries of this block
             # but its "within boundary" length is long enough
             # then we cannot narrow further the end of the block
-            if (block.end < run.end and
-                    rules._block_len_in_section(run, block) >= block.length):
+            if (
+                block.end < run.end
+                and rules._block_len_in_section(run, block) >= block.length
+            ):
                 break
 
             # Step 4.
@@ -147,26 +157,27 @@ def adjust_ranges_based_on_white_cells(mask, meta):
             # (non-white runs that are shorter than this one and not
             # covered by any other block should be set to white)
             if (
-                    # if run is entirely within the boundaries of this block
-                    block.start <= run.start
-                    and run.end <= block.end and not rules._covering_blocks(
-                        blocks_wo_this, run.start, run.end) and
-                    rules._block_len_in_section(run, block) < block.length):
+                # if run is entirely within the boundaries of this block
+                block.start <= run.start
+                and run.end <= block.end
+                and not rules._covering_blocks(blocks_wo_this, run.start, run.end)
+                and rules._block_len_in_section(run, block) < block.length
+            ):
                 logging.debug("R3.2 step 5: mark run as white: %s", run)
-                for cell in mask[run.start:run.end + 1]:
-                    # assert cell != BLACK, ("R3.2: segment contains black cell - '" 
-                    # + mask.decode("ascii") + "' '" + mask[run.start:run.end + 1].decode("ascii") 
+                for cell in mask[run.start : run.end + 1]:
+                    # assert cell != BLACK, ("R3.2: segment contains black cell - '"
+                    # + mask.decode("ascii") + "' '" + mask[run.start:run.end + 1].decode("ascii")
                     # + "', meta: " + str(meta))
                     if cell == BLACK:
-                        raise DiscrepancyInModel("R3.2: segment contains black cell - "
-                                                 "'{}' run: [{}:{}], meta: {}".format(
-                                                 mask.decode("ascii"),
-                                                 run.start, run.end+1,
-                                                 meta))
+                        raise DiscrepancyInModel(
+                            "R3.2: segment contains black cell - "
+                            "'{}' run: [{}:{}], meta: {}".format(
+                                mask.decode("ascii"), run.start, run.end + 1, meta
+                            )
+                        )
 
                 # update mask
-                mask[run.start:run.end +
-                     1] = [WHITE] * (run.end - run.start + 1)
+                mask[run.start : run.end + 1] = [WHITE] * (run.end - run.start + 1)
 
 
 def adjust_not_overlapping_black_runs(mask, meta):
@@ -197,8 +208,7 @@ def rule_3_3_1(mask, meta):
     for idx in range(len(meta.blocks)):
         prev_block = meta.blocks[idx - 1] if idx > 0 else None
         block = meta.blocks[idx]
-        next_block = (meta.blocks[idx +
-                                  1] if idx + 1 < len(meta.blocks) else None)
+        next_block = meta.blocks[idx + 1] if idx + 1 < len(meta.blocks) else None
 
         if mask[block.start] != BLACK:
             continue
@@ -211,7 +221,7 @@ def rule_3_3_1(mask, meta):
         # previous block range doesn't overlap with this one
 
         # (1) color this run's cells from "start"
-        mask[block.start:block.start + block.length] = [BLACK] * block.length
+        mask[block.start : block.start + block.length] = [BLACK] * block.length
         # and mark this run's boundaries as white
         if block.start > 0:  # if start -1 is within index range
             mask[block.start - 1] = WHITE
@@ -328,8 +338,7 @@ def rule_3_3_3_2(mask, meta):
     """
     # pylint: disable=invalid-name
     for idx in range(len(meta.blocks) - 1, -1, -1):
-        prev_block = meta.blocks[idx +
-                                 1] if idx + 1 < len(meta.blocks) else None
+        prev_block = meta.blocks[idx + 1] if idx + 1 < len(meta.blocks) else None
         block = meta.blocks[idx]
 
         # if there's a previous block and it's overlapping then continue
@@ -350,7 +359,10 @@ def rule_3_3_3_2(mask, meta):
             break
 
 
-RULES = (fill_scattered_ranges, adjust_ranges_based_on_white_cells,
-         adjust_not_overlapping_black_runs)
+RULES = (
+    fill_scattered_ranges,
+    adjust_ranges_based_on_white_cells,
+    adjust_not_overlapping_black_runs,
+)
 
-__all__ = ('RULES', )
+__all__ = ("RULES",)

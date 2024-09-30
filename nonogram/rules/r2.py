@@ -1,6 +1,7 @@
 """
 Rules to refine the ranges of the blocks.
 """
+
 import nonogram
 from nonogram import rules
 from nonogram.raster import BLACK
@@ -66,32 +67,38 @@ def narrow_boundaries(mask, meta):
 
         # runs in the block's range that are longer than the block length
         for black_segment in [
-                r for r in runs_in_block_range if block.length < r.length
+            r for r in runs_in_block_range if block.length < r.length
         ]:
 
             # if this is the last block in line
-            if ((
+            if (
+                (
                     len(meta.blocks) == block_idx + 1
                     # or if black segment only belongs to the former black runs
                     or not rules._is_segment_in_block_range(
-                        black_segment, meta.blocks[block_idx + 1:]))
-                    # and new start would be within boundaries
-                    and black_segment.end + 2 < meta.size - 1 - block.length
-                    # and it is worth the change
-                    and block.start < black_segment.end + 2):
+                        black_segment, meta.blocks[block_idx + 1 :]
+                    )
+                )
+                # and new start would be within boundaries
+                and black_segment.end + 2 < meta.size - 1 - block.length
+                # and it is worth the change
+                and block.start < black_segment.end + 2
+            ):
                 block.start = black_segment.end + 2
 
             # if black segment only belongs to the later black runs
-            if (not rules._is_segment_in_block_range(black_segment,
-                                                     meta.blocks[:block_idx])
-                    # and new start would be within boundaries
-                    and black_segment.start - 2 - block.length >= 0
-                    # and it is worth the change
-                    and black_segment.start - 2 < block.end):
+            if (
+                not rules._is_segment_in_block_range(
+                    black_segment, meta.blocks[:block_idx]
+                )
+                # and new start would be within boundaries
+                and black_segment.start - 2 - block.length >= 0
+                # and it is worth the change
+                and black_segment.start - 2 < block.end
+            ):
                 block.end = black_segment.start - 2
 
 
-RULES = (check_meta_consistency, look_for_trailing_white_cell,
-         narrow_boundaries)
+RULES = (check_meta_consistency, look_for_trailing_white_cell, narrow_boundaries)
 
-__all__ = ('RULES', )
+__all__ = ("RULES",)

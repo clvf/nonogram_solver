@@ -2,6 +2,7 @@
 Module containing the rules that are used to solve the puzzle with logical
 elimination.
 """
+
 from nonogram.raster import BLACK
 from nonogram.raster import UNKNOWN
 from nonogram.raster import WHITE
@@ -13,9 +14,7 @@ def _covering_blocks(blocks, start, end=None):
     if end is None:
         end = start
 
-    return [
-        block for block in blocks if block.start <= start and block.end >= end
-    ]
+    return [block for block in blocks if block.start <= start and block.end >= end]
 
 
 def _get_black_runs(mask):
@@ -47,7 +46,8 @@ def _get_black_runs(mask):
 def _runs_in_block_range(block, mask):
     """Return the runs that are within the block range entirely."""
     return [
-        run for run in _get_black_runs(mask)
+        run
+        for run in _get_black_runs(mask)
         if block.start <= run.start and run.end <= block.end
     ]
 
@@ -94,15 +94,16 @@ def _runs_starting_in_block_range(block, mask):
     """Return the runs that start within the block range and may end
     outside."""
     return [
-        run for run in _get_black_runs(mask)
+        run
+        for run in _get_black_runs(mask)
         if block.start <= run.start and run.start <= block.end
     ]
 
 
 def _runs_ending_in_block_range(block, mask):
-    """Return the runs that end within the block range and may start before
-    """
+    """Return the runs that end within the block range and may start before"""
     return [
-        run for run in _get_black_runs(mask)
+        run
+        for run in _get_black_runs(mask)
         if block.start <= run.end and run.end <= block.end
     ]

@@ -26,7 +26,7 @@ def fill_intersections(mask, meta):
     # pylint: disable=invalid-name
     for block in meta.blocks:
         u = (block.end - block.start + 1) - block.length
-        #assert u >= 0, "u: " + str(u) + " blk: " + str(block) + " meta: " + str(meta)
+        # assert u >= 0, "u: " + str(u) + " blk: " + str(block) + " meta: " + str(meta)
 
         lb = block.start + u  # lower bound
         ub = block.end - u + 1  # upper bound
@@ -82,27 +82,34 @@ def mark_white_cell_at_boundary(mask, meta):
 
     for idx in range(len(meta.blocks)):
         block = meta.blocks[idx]
-        blocks_wo_this = [
-            meta.blocks[i] for i in range(len(meta.blocks)) if idx != i
-        ]
+        blocks_wo_this = [meta.blocks[i] for i in range(len(meta.blocks)) if idx != i]
 
         # if the start of the block is BLACK and the preceding cell is
         # UNKNOWN
-        if (mask[block.start] == BLACK and block.start - 1 >= 0
-                and mask[block.start - 1] == UNKNOWN):
-            covering_blocks = rules._covering_blocks(blocks_wo_this,
-                                                     block.start)
+        if (
+            mask[block.start] == BLACK
+            and block.start - 1 >= 0
+            and mask[block.start - 1] == UNKNOWN
+        ):
+            covering_blocks = rules._covering_blocks(blocks_wo_this, block.start)
 
-            if (covering_blocks
-                    and max([block.length for block in covering_blocks]) == 1):
+            if (
+                covering_blocks
+                and max([block.length for block in covering_blocks]) == 1
+            ):
                 mask[block.start - 1] = WHITE
 
         # if the end of the block is BLACK and the next cell is UNKNOWN
-        if (mask[block.end] == BLACK and block.end + 1 < len(mask)
-                and mask[block.end + 1] == UNKNOWN):
+        if (
+            mask[block.end] == BLACK
+            and block.end + 1 < len(mask)
+            and mask[block.end + 1] == UNKNOWN
+        ):
             covering_blocks = rules._covering_blocks(blocks_wo_this, block.end)
-            if (covering_blocks
-                    and max([block.length for block in covering_blocks]) == 1):
+            if (
+                covering_blocks
+                and max([block.length for block in covering_blocks]) == 1
+            ):
                 mask[block.end + 1] = WHITE
 
 
@@ -124,15 +131,19 @@ def mark_white_cell_bween_sgmts(mask, meta):
 
     for i in range(len(black_runs) - 1):
         # if the two adjoint black run is separated by an UNKNOWN cell
-        if (black_runs[i + 1].start - black_runs[i].end == 1
-                and mask[black_runs[i].end + 1] == UNKNOWN):
-            covering_blocks = rules._covering_blocks(meta, black_runs[i].end,
-                                                     black_runs[i + 1].start)
+        if (
+            black_runs[i + 1].start - black_runs[i].end == 1
+            and mask[black_runs[i].end + 1] == UNKNOWN
+        ):
+            covering_blocks = rules._covering_blocks(
+                meta, black_runs[i].end, black_runs[i + 1].start
+            )
             if covering_blocks:
-                covering_max_len = max(
-                    [block.length for block in covering_blocks])
-                if (covering_max_len <
-                        black_runs[i].length + black_runs[i + 1].length + 1):
+                covering_max_len = max([block.length for block in covering_blocks])
+                if (
+                    covering_max_len
+                    < black_runs[i].length + black_runs[i + 1].length + 1
+                ):
                     mask[black_runs[i].end + 1] = WHITE
 
 
@@ -174,8 +185,7 @@ def fill_cells_based_on_boundary(mask, meta):
             # if an empty cell is found or we reached the wall and the
             # lower bound is less than the upper bound
             if (found_empty or m == 0) and lower_bound < upper_bound:
-                mask[lower_bound:upper_bound] = [BLACK] * (upper_bound -
-                                                           lower_bound)
+                mask[lower_bound:upper_bound] = [BLACK] * (upper_bound - lower_bound)
 
         found_empty = 0
         if minL > 0 and mask[i + 1] != BLACK and mask[i] == BLACK:
@@ -190,10 +200,8 @@ def fill_cells_based_on_boundary(mask, meta):
 
             # if an empty cell is found or we reached the wall and the
             # lower bound is less than the upper bound
-            if (found_empty
-                    or n == len(mask) - 1) and lower_bound < upper_bound:
-                mask[lower_bound:upper_bound] = [BLACK] * (upper_bound -
-                                                           lower_bound)
+            if (found_empty or n == len(mask) - 1) and lower_bound < upper_bound:
+                mask[lower_bound:upper_bound] = [BLACK] * (upper_bound - lower_bound)
 
 
 @nonogram.log_changes("R1.5")
@@ -211,8 +219,7 @@ def mark_boundary_if_possible(mask, meta):
         return
 
     for block in rules._get_black_runs(mask):
-        covering_blocks = rules._covering_blocks(meta.blocks, block.start,
-                                                 block.end)
+        covering_blocks = rules._covering_blocks(meta.blocks, block.start, block.end)
 
         same_length = 1
         for cov in covering_blocks:
@@ -226,8 +233,13 @@ def mark_boundary_if_possible(mask, meta):
                 mask[block.end + 1] = WHITE
 
 
-RULES = (fill_intersections, check_spaces, mark_white_cell_at_boundary,
-         mark_white_cell_bween_sgmts, fill_cells_based_on_boundary,
-         mark_boundary_if_possible)
+RULES = (
+    fill_intersections,
+    check_spaces,
+    mark_white_cell_at_boundary,
+    mark_white_cell_bween_sgmts,
+    fill_cells_based_on_boundary,
+    mark_boundary_if_possible,
+)
 
-__all__ = ('RULES', )
+__all__ = ("RULES",)

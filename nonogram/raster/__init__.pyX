@@ -5,6 +5,7 @@ Module for the nonogram model.
 from functools import reduce
 import copy
 import itertools
+import logging
 import os
 import re
 
@@ -16,24 +17,37 @@ BLACK = 88  # \x58: ascii 'X'
 UNKNOWN = 46  # \x2E: ascii '.'
 WHITE = 32  # \x20: ascii ' '
 
-EMPTY = re.compile(r"^\s*$")
-COMMENT = re.compile(r"^\s*#.*$")
+EMPTY = re.compile(r'^\s*$')
+COMMENT = re.compile(r'^\s*#.*$')
 
 
 def cleanse_puzzle(lines):
     """Delete emtpy lines and comments from the lines defining a puzzle"""
     return [
-        line
-        for line in lines
+        line for line in lines
         if not re.match(EMPTY, line) and not re.match(COMMENT, line)
     ]
 
+def compute_const(meta):
+    """Return the number of black & white cells in the given row or col based
+    on the metadata.
+    """
+    res = []
 
-class Raster:
+    for line in meta:
+        n_black = 0
+        for block in line.blocks:
+            n_black += block.length
+
+        res.append((n_black, line.size - n_black))
+
+    return res
+
+
+class Raster():
     """
     Class representing the nonogram model.
     """
-
     def __init__(self, table, row_meta, col_meta):
         self.table = table
         self.width = len(table[0])
@@ -41,14 +55,21 @@ class Raster:
         self.row_meta = row_meta
         self.col_meta = col_meta
 
+        # "constraints": number of black & white cells in each row & col if puzzle solved
+        self.row_const = compute_const(row_meta)
+        self.col_const = compute_const(col_meta)
+
     @classmethod
     def from_file(cls, file_):
-        """Return a Raster object modelling the puzzle description passed in"""
+        """Return a Raster object modelling the puzzle description passed in
+        """
         file_content = cleanse_puzzle(file_.readlines())
         header = file_content.pop(0).split()
         (width, height) = (int(header[0]), int(header[1]))
 
-        table = [bytearray((UNKNOWN for j in range(width))) for i in range(height)]
+        table = [
+            bytearray((UNKNOWN for j in range(width))) for i in range(height)
+        ]
 
         row_meta = list()
         col_meta = list()
@@ -87,7 +108,9 @@ class Raster:
         header = file_content.pop(0).split()
         (width, height) = (int(header[0]), int(header[1]))
 
-        table = [bytearray((UNKNOWN for j in range(width))) for i in range(height)]
+        table = [
+            bytearray((UNKNOWN for j in range(width))) for i in range(height)
+        ]
 
         row_meta = list()
         col_meta = list()
@@ -111,13 +134,16 @@ class Raster:
 
         return cls(**dict(table=table, row_meta=row_meta, col_meta=col_meta))
 
+
     def __str__(self):
         repr_ = ""
         offset = "   "
         for i in range(self.width):
             line_ = offset + "|" * i
             line_ += "+" + "-" * (self.width - 1 - i) + " "
-            line_ += "; ".join((str(block) for block in self.col_meta[i].blocks))
+            line_ += "; ".join(
+                (str(block) for block in self.col_meta[i].blocks))
+            line_ += " b: {}, w: {}".format(*self.col_const[i])
             repr_ += line_ + os.linesep
 
         header = offset
@@ -127,8 +153,10 @@ class Raster:
 
         for i in range(self.height):
             line_ = " " + str(i % 10) + " "
-            line_ += self.table[i].decode("ascii") + " "
-            line_ += "; ".join((str(block) for block in self.row_meta[i].blocks))
+            line_ += self.table[i].decode('ascii') + " "
+            line_ += "; ".join(
+                (str(block) for block in self.row_meta[i].blocks))
+            line_ += " b: {}, w: {}".format(*self.row_const[i])
             repr_ += line_ + os.linesep
 
         return repr_ + os.linesep
@@ -148,9 +176,8 @@ class Raster:
     def update_row(self, idx=None, mask=None):
         """Updates the UNKNOWN cells of the idx'th row based on the mask."""
         row = self.get_row(idx)
-        (new, modified_cells) = self._update_list(
-            rec=row, mask=mask, idx=idx, type_="row"
-        )
+        (new, modified_cells) = self._update_list(rec=row, mask=mask, idx=idx,
+                                                  type_='row')
         self._replace_row(row=new, idx=idx)
 
         return modified_cells
@@ -170,21 +197,19 @@ class Raster:
                 rec[i] = mask[i]
                 modified_cells.append(i)
 
-            if rec[i] != UNKNOWN and mask[i] != UNKNOWN and rec[i] != mask[i]:
+            if (rec[i] != UNKNOWN and mask[i] != UNKNOWN
+                    and rec[i] != mask[i]):
                 raise DiscrepancyInModel(
                     "{}: {}, CURRENT: {!s} NEW: {!s}".format(
-                        type_, str(idx), original, mask
-                    )
-                )
+                        type_, str(idx), original, mask))
 
         return rec, modified_cells
 
     def update_col(self, idx=None, mask=None):
         """Updates the UNKNOWN cells of the idx'th column based on the mask."""
         col = self.get_col(idx)
-        (new, modified_cells) = self._update_list(
-            rec=col, mask=mask, idx=idx, type_="col"
-        )
+        (new, modified_cells) = self._update_list(rec=col, mask=mask, idx=idx,
+                                                  type_='col')
         self._replace_col(col=new, idx=idx)
 
         return modified_cells
@@ -209,37 +234,90 @@ class Raster:
             r_lst[r_idx][0] = cnt
 
         # drop elements (row/col) NOT having UNKNOWN fields
-        return itertools.chain(
-            [r for r in r_lst if r[0] > 0], [c for c in c_lst if c[0] > 0]
-        )
+        return itertools.chain([r for r in r_lst if r[0] > 0], [c for c in c_lst if c[0] > 0])
+
+    def num_colored_row(self, idx):
+        """Return the number of already black and white colored cells in the row."""
+        n_black, n_white = 0, 0
+
+        # number of already black and white colored cells in the row
+        for byte in self.table[idx]:
+            if BLACK == byte:
+                n_black += 1
+            if WHITE == byte:
+                n_white += 1
+
+        return (n_black, n_white)
+
+    def num_colored_col(self, idx):
+        """Return the number of already black and white colored cells in the column."""
+        n_black, n_white = 0, 0
+
+        # number of already black and white colored cells in the column
+        for row in self.table:
+            if BLACK == row[idx]:
+                n_black += 1
+            if WHITE == row[idx]:
+                n_white += 1
+            
+        return (n_black, n_white)
 
     def rank_guess_opts(self):
         """Rank the possible guesses ("guess options") by ranking the row/column
-        having the most UNKNOWN field as highest (returning first).
+        having the fewest UNKNOWN field as highest (returning first).
         """
-        # sort by number of UNKNOWN desc
-        return sorted(self._count_unknowns(), key=lambda x: -1 * x[0])
+        # sort by number of UNKNOWN
+        return sorted(self._count_unknowns(), key=lambda x: x[0])
+
+    
 
     def make_guess(self, idx, is_row):
         """Return a copy (clone) of self by changing an UNKNOWN field to BLACK
         and then to WHITE at the selected index of the given row or column.
         """
         if is_row:
+            n_b_r, n_w_r = self.num_colored_row(idx)
+
             for i, byte in enumerate(self.table[idx]):
                 if UNKNOWN == byte:
-                    guess = copy.deepcopy(self)
-                    guess.table[idx][i] = BLACK
-                    yield guess
-                    guess = copy.deepcopy(self)
-                    guess.table[idx][i] = WHITE
-                    yield guess
+                    n_b_c, n_w_c = self.num_colored_col(i)
+                    # if the number of (already) black colored cells in the row is
+                    # less than the total number of colored cell
+                    # AND
+                    # the number of already black colored cells in the column
+                    # is less than the total number of colored cells in that column
+                    if n_b_r < self.row_const[idx][0] and n_b_c < self.col_const[i][0]:
+                        logging.debug("GUESS: '%s' - row[%s][%s] %s < %s and %s < %s", self.table[idx].decode("ascii"), idx, i, n_b_r, self.row_const[idx][0], n_b_c, self.col_const[i][0])
+                        logging.debug(self)
+                        guess = copy.deepcopy(self)
+                        guess.table[idx][i] = BLACK
+                        yield guess
+
+                    # if the number of (already) white colored cells is less than the
+                    # total number of white cells in the row
+                    # AND
+                    # the number of already white colored cells in the column is
+                    # less than the total number of white cells in the column
+                    if n_w_r < self.row_const[idx][1] and n_w_c < self.col_const[i][1]:
+                        guess = copy.deepcopy(self)
+                        guess.table[idx][i] = WHITE
+                        yield guess
 
         else:
+            n_b_c, n_w_c = self.num_colored_col(idx)
+
             for i, row in enumerate(self.table):
                 if UNKNOWN == row[idx]:
-                    guess = copy.deepcopy(self)
-                    guess.table[i][idx] = BLACK
-                    yield guess
-                    guess = copy.deepcopy(self)
-                    guess.table[i][idx] = WHITE
-                    yield guess
+                    n_b_r, n_w_r = self.num_colored_row(i)
+
+                    if n_b_c < self.col_const[idx][0] and n_b_r < self.row_const[i][0]:
+                        logging.debug(f"GUESS: '{self.get_col(idx).decode('ascii')}' - col[{idx}][{i}] {n_b_c} < {self.col_const[idx][0]} and {n_b_r} < {self.row_const[i][0]}")
+                        logging.debug(self)
+                        guess = copy.deepcopy(self)
+                        guess.table[i][idx] = BLACK
+                        yield guess
+
+                    if n_w_c < self.col_const[idx][1] and n_w_r < self.col_const[i][1]:
+                        guess = copy.deepcopy(self)
+                        guess.table[i][idx] = WHITE
+                        yield guess

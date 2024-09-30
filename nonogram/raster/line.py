@@ -7,10 +7,11 @@ import typing
 
 
 @dataclasses.dataclass
-class Line():
+class Line:
     """
     Class incorporating the meta information that we know of a row or column.
     """
+
     # pylint: disable=too-few-public-methods
     size: int
     idx: int
