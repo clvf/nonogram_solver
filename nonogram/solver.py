@@ -75,14 +75,22 @@ def linesolve(mask, meta):
         cblack, cwhite = rstr.filled_cnt(mask)
         # if more cells are colored to black or white than it should...
         if cblack > nblack or cwhite > nwhite:
-            raise DiscrepancyInModel("nblack: {}, actually colored: {}, nwhite: {}, actually colored {}, meta: {}".format(nblack, cblack, nwhite, cwhite, meta))
+            raise DiscrepancyInModel(
+                "nblack: {}, actually colored: {}, nwhite: {}, actually colored {}, meta: {}".format(
+                    nblack, cblack, nwhite, cwhite, meta
+                )
+            )
 
         # if the line is "solved" (although UNKNOWN cells can still appear)
         if cblack == nblack:
             black_runs = r._get_black_runs(mask)
             # then there should be exactly as many black runs as the meta says
             if len(black_runs) != len([b for b in meta.blocks if b.length > 0]):
-                raise DiscrepancyInModel("len(black_runs) != len(meta.blocks):  {} != {} mask: '{}', meta: {}".format(len(black_runs), len(meta.blocks), mask.decode("ascii"),  meta))
+                raise DiscrepancyInModel(
+                    "len(black_runs) != len(meta.blocks):  {} != {} mask: '{}', meta: {}".format(
+                        len(black_runs), len(meta.blocks), mask.decode("ascii"), meta
+                    )
+                )
 
 
 def bifurcate(raster, print_raster=False):

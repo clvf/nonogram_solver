@@ -40,6 +40,7 @@ def filled_cnt(mask):
 
     return (cblack, cwhite)
 
+
 class Raster:
     """
     Class representing the nonogram model.
@@ -226,7 +227,7 @@ class Raster:
         """
         # TODO: would it be better to sort by number of UNKNOWN desc. Eg.:
         # return sorted(self._count_unknowns(), key=lambda x: -1 * x[0])
-        # 
+        #
         # sort by number of UNKNOWN asc
         return sorted(self._count_unknowns())
 
@@ -234,8 +235,11 @@ class Raster:
         """Return a copy (clone) of self by changing an UNKNOWN field to BLACK
         and then to WHITE at the selected index of the given row or column.
         """
-        nblack, nwhite = self.row_meta[idx].nums  # num of black & white cells according to the cues
-        cblack, cwhite = filled_cnt(self.table[idx])  # num of actually black and white colored cells
+        # num of black & white cells according to the cues
+        nblack, nwhite = self.row_meta[idx].nums
+        # num of actually black and white colored cells
+        cblack, cwhite = filled_cnt(self.table[idx])
+
         for i, byte in enumerate(self.table[idx]):
             if UNKNOWN == byte:
                 if cblack < nblack:
@@ -247,4 +251,3 @@ class Raster:
                     guess = copy.deepcopy(self)
                     guess.table[idx][i] = WHITE
                     yield guess
-

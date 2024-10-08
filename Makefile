@@ -1,8 +1,9 @@
 EXAMPLES := $(wildcard examples/*.txt)
+NIN_EXAMPLES := $(wildcard examples/FORMAT-NIN/*.nin)
 
-.PHONY : examples $(EXAMPLES)
+.PHONY : examples $(EXAMPLES) $(NIN_EXAMPLES)
 
-examples: $(EXAMPLES)
+examples: $(EXAMPLES) $(NIN_EXAMPLES)
 
 $(EXAMPLES):
 	@echo
@@ -10,6 +11,13 @@ $(EXAMPLES):
 	@echo "#" $@
 	@echo "#########"
 	@time --format="took %e sec" ./nonogram-solver.py $@
+
+$(NIN_EXAMPLES):
+	@echo
+	@echo "#########"
+	@echo "#" $@
+	@echo "#########"
+	@time --format="took %e sec" ./nonogram-solver.py --format-nin $@
 
 syntax:
 	@python -m py_compile *.py
