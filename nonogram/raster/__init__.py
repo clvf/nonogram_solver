@@ -29,6 +29,17 @@ def cleanse_puzzle(lines):
     ]
 
 
+def filled_cnt(mask):
+    """Return the number of (already) black and white colored cells in the mask."""
+    cblack, cwhite = 0, 0
+    for i in mask:
+        if i == BLACK:
+            cblack += 1
+        elif i == WHITE:
+            cwhite += 1
+
+    return (cblack, cwhite)
+
 class Raster:
     """
     Class representing the nonogram model.
@@ -196,50 +207,44 @@ class Raster:
             self.table[cell_idx][idx] = col[cell_idx]
 
     def _count_unknowns(self):
-        """Return how many UNKNOWN fields are in the given row and column."""
-        r_lst = [[0, i, True] for i in range(self.height)]  # row list
-        c_lst = [[0, i, False] for i in range(self.width)]  # column list
-        for r_idx, row in enumerate(self.table):
+        """Return how many UNKNOWN fields are in a row."""
+        res = [[0, i] for i in range(self.height)]
+        for i, row in enumerate(self.table):
             cnt = 0
-            for c_idx, byte in enumerate(row):
+            for byte in row:
                 if UNKNOWN == byte:
                     cnt += 1
-                    c_lst[c_idx][0] += 1
 
-            r_lst[r_idx][0] = cnt
+            res[i][0] = cnt
 
-        # drop elements (row/col) NOT having UNKNOWN fields
-        return itertools.chain(
-            [r for r in r_lst if r[0] > 0], [c for c in c_lst if c[0] > 0]
-        )
+        # drop rows not having UNKNOWN fields
+        return [r for r in res if r[0] > 0]
 
     def rank_guess_opts(self):
         """Rank the possible guesses ("guess options") by ranking the row/column
         having the most UNKNOWN field as highest (returning first).
         """
-        # sort by number of UNKNOWN desc
-        return sorted(self._count_unknowns(), key=lambda x: -1 * x[0])
+        # TODO: would it be better to sort by number of UNKNOWN desc. Eg.:
+        # return sorted(self._count_unknowns(), key=lambda x: -1 * x[0])
+        # 
+        # sort by number of UNKNOWN asc
+        return sorted(self._count_unknowns())
 
-    def make_guess(self, idx, is_row):
+    def make_guess(self, idx):
         """Return a copy (clone) of self by changing an UNKNOWN field to BLACK
         and then to WHITE at the selected index of the given row or column.
         """
-        if is_row:
-            for i, byte in enumerate(self.table[idx]):
-                if UNKNOWN == byte:
+        nblack, nwhite = self.row_meta[idx].nums  # num of black & white cells according to the cues
+        cblack, cwhite = filled_cnt(self.table[idx])  # num of actually black and white colored cells
+        for i, byte in enumerate(self.table[idx]):
+            if UNKNOWN == byte:
+                if cblack < nblack:
                     guess = copy.deepcopy(self)
                     guess.table[idx][i] = BLACK
                     yield guess
+
+                if cwhite < nwhite:
                     guess = copy.deepcopy(self)
                     guess.table[idx][i] = WHITE
                     yield guess
 
-        else:
-            for i, row in enumerate(self.table):
-                if UNKNOWN == row[idx]:
-                    guess = copy.deepcopy(self)
-                    guess.table[i][idx] = BLACK
-                    yield guess
-                    guess = copy.deepcopy(self)
-                    guess.table[i][idx] = WHITE
-                    yield guess

@@ -44,7 +44,7 @@ def main(args=None):
         if args.no_bifurcation:
             sys.exit(1)
 
-        solution = solver.bifurcate(raster)
+        solution = solver.bifurcate(raster, args.debug)
 
         if solution:
             repr_solution(solution, args.bmp_file)

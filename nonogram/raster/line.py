@@ -16,6 +16,18 @@ class Line:
     size: int
     idx: int
     blocks: typing.List[typing.Any]
+    nums: typing.Tuple[int, int]  # number of black & white cells according to the cues
+
+    def __init__(self, size, idx, blocks):
+        self.size = size
+        self.idx = idx
+        self.blocks = blocks
+
+        nblack = 0
+        for block in blocks:
+            nblack += block.length
+
+        self.nums = (nblack, size - nblack)
 
     def __str__(self):
         str_ = "{!s}, size: {!s}, blocks: [".format(self.idx, self.size)
