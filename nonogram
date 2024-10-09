@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+"""
+A program that tries to solve nonograms.
+"""
+
+import argparse
+import logging
+import sys
+
+from nonogrampy.raster import Raster
+from nonogrampy import solver
+
+_BIFURCATION_LEVEL = 1
+
+
+def repr_solution(solution, bmp_file):
+    """Represent solution."""
+    print(str(solution), end="")
+    if bmp_file:
+        solution.to_bitmap(bmp_file)
+
+
+def solve_cmd(args=None):
+    """
+    Read the puzzle from the input file and start solving it.
+    """
+    logging.basicConfig(
+        format="%(message)s", level=logging.DEBUG if args.debug else logging.INFO
+    )
+    with open(args.input_file, "r") as inp:
+        solution = solver.solve(
+            Raster.from_file(inp), args.no_bifurcation, blvl=_BIFURCATION_LEVEL
+        )
+
+        if solution:
+            repr_solution(solution, args.bmp_file)
+            sys.exit(0)
+
+        sys.exit(1)
+
+
+def print_cmd(args=None):
+    """Print the puzzle in a human readable form."""
+    for file in args.input_file:
+        with open(file, "r") as inp:
+            print(Raster.from_file(inp))
+            print()
+
+
+if __name__ == "__main__":
+    # pylint: disable=invalid-name
+    parser = argparse.ArgumentParser(description="Nonogram solver.")
+    parser.add_argument("--debug", "-d", help="Enable debug logs.", action="store_true")
+
+    subparsers = parser.add_subparsers(title="subcommands")
+    solv_parser = subparsers.add_parser("solve", help="Solve puzzle.")
+    print_parser = subparsers.add_parser("print", help="Print puzzle.")
+
+    solv_parser.set_defaults(func=solve_cmd)
+    solv_parser.add_argument("input_file", help="File specifying the nonogram.")
+    solv_parser.add_argument(
+        "--bmp",
+        dest="bmp_file",
+        help="Write the solution to the specified file in BMP format.",
+    )
+    solv_parser.add_argument(
+        "--nb",
+        help=(
+            '"No Bifurcation" - Try to solve the puzzle only by logical '
+            "elimination. Do not make guesses."
+        ),
+        action="store_true",
+        dest="no_bifurcation",
+    )
+
+    print_parser.set_defaults(func=print_cmd)
+    print_parser.add_argument(
+        "input_file", nargs="+", help="file(s) specifying nonogram(s)"
+    )
+
+    args = parser.parse_args()
+    args.func(args)

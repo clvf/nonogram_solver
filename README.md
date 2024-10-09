@@ -11,18 +11,13 @@ discrepancy found or the puzzle is solved.
 ## Usage
 
 ```bash
-$ nonogram-solver.py --help
-$ nonogram-solver.py examples/house.txt
+$ nonogram --help
+$ nonogram solve --help
+$ nonogram print --help
 
-  X
- XXX
-XXXXX
-X X X
-X XXX
+$ nonogram solve examples/005-cat.nin
 
-$ nonogram-solver.py examples/NIN_FORMAT/cat.nin --format-nin
-
- XX
+  XX
  XX
  X
  X
@@ -42,13 +37,36 @@ XX  XXXXXXXXXXXXXXXX
   X         X
   XX        XX
   XX        XX
+
+
+$ nonogram solve examples/010-house.nin
+
+  X
+ XXX
+XXXXX
+X X X
+X XXX
+
+$ nonogram print examples/010-house.nin
+
+   +---- (0<->4|len: 3)
+   |+--- (0<->4|len: 2)
+   ||+-- (0<->4|len: 5)
+   |||+- (0<->4|len: 2); (0<->4|len: 1)
+   ||||+ (0<->4|len: 3)
+   01234
+ 0 ..... (0<->4|len: 1)
+ 1 ..... (0<->4|len: 3)
+ 2 ..... (0<->4|len: 5)
+ 3 ..... (0<->4|len: 1); (0<->4|len: 1); (0<->4|len: 1)
+ 4 ..... (0<->4|len: 1); (0<->4|len: 3)
 ```
 
 If the program didn't find a solution then it's worth to pass the `--debug`
 option on the command line so you can see how far it got.
 
 ```bash
-$ nonogram-solver.py examples/smiley.txt --debug
+$ nonogram --debug solve --nb examples/035-smiley.nin
 
    +---- (3<->4|len: 1)
    |+--- (1<->1|len: 1); (3<->4|len: 1)
@@ -70,12 +88,12 @@ and lines starting with comment (#) ignored.
 
 1. The first line defines the number of columns and rows in the puzzle in this
    order separated by a single space.
-1. The subsequent lines define the length of blocks in the columns of the puzzle.
-   The leftmost block is the bottom in the column and the rightmost block is at
-   the top of the column.
-   Each number should be separated by a single space.
-1. The following lines define the length of blocks in the rows of the puzzle in
+1. The subsequent lines define the length of blocks in the rows of the puzzle in
    left-to-right order.
+   Each number should be separated by a single space.
+1. The following lines define the length of blocks in the columns of the puzzle.
+   The leftmost block is the top in the column and the rightmost block is at
+   the bottom of the column.
    Each number should be separated by a single space.
 
 ###### Sample
@@ -102,12 +120,6 @@ should be represented as follows:
 ```
 # number of columns   number of rows
 5 5
-# columns:
-3
-2
-5
-2 1
-3
 
 # rows:
 1
@@ -115,15 +127,18 @@ should be represented as follows:
 5
 1 1 1
 1 3
+
+# cols:
+3
+2
+5
+2 1
+3
 ```
 
 You can feed in puzzles from https://webpbn.com exported via
 https://webpbn.com/export.cgi. Make sure you select ".NIN" (or ".MK") file
-format at export. Include `--format-nin` at the command line:
-
-```bash
-$ nonogram-solver.py examples/NIN_FORMAT/cat.nin --format-nin
-```
+format at export.
 
 ## FAQ
 
