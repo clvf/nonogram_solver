@@ -38,13 +38,13 @@ def main(args=None):
             repr_solution(solution, args.bmp_file)
             sys.exit(0)
 
-        logging.debug("%s", raster)
         logging.info("No solution after pure logical elimination. Bifurcating...\n")
 
         if args.no_bifurcation:
+            logging.info("%s", raster)
             sys.exit(1)
 
-        solution = solver.bifurcate(raster, args.debug)
+        solution = solver.bifurcate(raster, 1, args.debug)
 
         if solution:
             repr_solution(solution, args.bmp_file)

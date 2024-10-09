@@ -93,11 +93,11 @@ def linesolve(mask, meta):
                 )
 
 
-def bifurcate(raster, print_raster=False):
+def bifurcate(raster, level, print_raster=False):
     """Makes a guess, applies logical elimination and backtracks if discrepancy
     found."""
     for guess in raster.rank_guess_opts():
-        _, idx = guess
+        _, _, idx = guess
         for guessed_raster in raster.make_guess(idx):
             if print_raster:
                 logging.debug("%s", guessed_raster)
@@ -118,10 +118,10 @@ def bifurcate(raster, print_raster=False):
                 return solution
 
             # TODO: not solved and no discrepancy found then branch further
-            #
-            # solution = bifurcate(guessed_raster)
-            #
-            # if solution:
-            #    return solution
+            if level > 0:
+                solution = bifurcate(guessed_raster, level - 1)
+
+                if solution:
+                    return solution
 
     return None

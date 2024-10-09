@@ -209,14 +209,15 @@ class Raster:
 
     def _count_unknowns(self):
         """Return how many UNKNOWN fields are in a row."""
-        res = [[0, i] for i in range(self.height)]
+        res = []
         for i, row in enumerate(self.table):
+            _, nwhite = self.row_meta[i].nums
             cnt = 0
             for byte in row:
                 if UNKNOWN == byte:
                     cnt += 1
 
-            res[i][0] = cnt
+            res.append([cnt, nwhite, i])
 
         # drop rows not having UNKNOWN fields
         return [r for r in res if r[0] > 0]
@@ -228,8 +229,8 @@ class Raster:
         # TODO: would it be better to sort by number of UNKNOWN desc. Eg.:
         # return sorted(self._count_unknowns(), key=lambda x: -1 * x[0])
         #
-        # sort by number of UNKNOWN asc
-        return sorted(self._count_unknowns())
+        # sort by number of (UNKNOWN * number of white cells if solved) asc
+        return sorted(self._count_unknowns(), key=lambda x: x[0]*x[1])
 
     def make_guess(self, idx):
         """Return a copy (clone) of self by changing an UNKNOWN field to BLACK
