@@ -6,6 +6,8 @@ import copy
 import functools
 import logging
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class DiscrepancyInModel(Exception):
     """
@@ -26,17 +28,22 @@ def log_changes(rule):
         @functools.wraps(func)
         def wrapped_f(mask, meta):
             """The new (wrapped) func"""
-            orig_mask = copy.deepcopy(mask)
-            orig_meta = copy.deepcopy(meta)
+            if _LOGGER.isEnabledFor(logging.DEBUG):
+                orig_mask = copy.deepcopy(mask)
+                orig_meta = copy.deepcopy(meta)
+
             func(mask, meta)
 
-            if mask != orig_mask:
-                logging.debug(
-                    "%s %s: %s -> %s %s", rule, func.__name__, orig_mask, mask, meta
-                )
+            if _LOGGER.isEnabledFor(logging.DEBUG):
+                if mask != orig_mask:
+                    _LOGGER.debug(
+                        "%s %s: %s -> %s %s", rule, func.__name__, orig_mask, mask, meta
+                    )
 
-            if meta != orig_meta:
-                logging.debug("%s %s: %s -> %s", rule, func.__name__, orig_meta, meta)
+                if meta != orig_meta:
+                    _LOGGER.debug(
+                        "%s %s: %s -> %s", rule, func.__name__, orig_meta, meta
+                    )
 
         return wrapped_f
 
