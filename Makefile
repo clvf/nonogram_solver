@@ -22,5 +22,4 @@ test:
 	@python -m unittest discover
 
 format:
-	@python -m black nonogram nonogrampy
-
+	@ruff format nonogram nonogrampy

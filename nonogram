@@ -10,8 +10,6 @@ import sys
 from nonogrampy.raster import Raster
 from nonogrampy import solver
 
-_BIFURCATION_LEVEL = 1
-
 
 def repr_solution(solution, bmp_file):
     """Represent solution."""
@@ -29,13 +27,15 @@ def solve_cmd(args=None):
     )
     with open(args.input_file, "r") as inp:
         solution = solver.solve(
-            Raster.from_file(inp), args.no_bifurcation, blvl=_BIFURCATION_LEVEL
+            Raster.from_file(inp),
+            args.no_bifurcation,
         )
 
         if solution:
             repr_solution(solution, args.bmp_file)
             sys.exit(0)
 
+        logging.error("No solution found.")
         sys.exit(1)
 
 

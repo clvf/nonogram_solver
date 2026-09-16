@@ -188,34 +188,36 @@ class Raster:
 
             res.append([cnt, nwhite, i])
 
-        # drop rows not having UNKNOWN fields
-        return [r for r in res if r[0] > 0]
+        return res
 
-    def rank_guess_opts(self):
-        """Rank the possible guesses ("guess options") by ranking the row/column
-        having the most UNKNOWN field as highest (returning first).
-        """
+    def find_row_with_unknown(self):
+        """Return the index of the row having the least UNKNOWN field."""
         # sort by number of (UNKNOWN * row length (puzzle width)
         #                    + number of white cells if solved) asc
-        return sorted(self._count_unknowns(), key=lambda x: x[0] * self.width + x[1])
+        # drop rows not having UNKNOWN fields
+        return sorted(
+            [r for r in self._count_unknowns() if r[0] > 0],
+            key=lambda x: x[0] * self.width + x[1],
+        )[0][-1]
 
-    def make_guess(self, idx):
+    def guess_black(self, idx):
         """Return a copy (clone) of self by changing an UNKNOWN field to BLACK
-        and then to WHITE at the selected index of the given row or column.
+        at the selected index of the given row.
         """
-        # num of black & white cells according to the cues
-        nblack, nwhite = self.row_meta[idx].nums
-        # num of actually black and white colored cells
-        cblack, cwhite = filled_cnt(self.table[idx])
+        return self.make_guess(idx, BLACK)
 
+    def guess_white(self, idx):
+        """Return a copy (clone) of self by changing an UNKNOWN field to WHITE
+        at the selected index of the given row.
+        """
+        return self.make_guess(idx, WHITE)
+
+    def make_guess(self, idx, color):
+        """Return a copy (clone) of self by changing an UNKNOWN field to "color"
+        at the selected index of the given row.
+        """
         for i, byte in enumerate(self.table[idx]):
             if UNKNOWN == byte:
-                if cblack < nblack:
-                    guess = copy.deepcopy(self)
-                    guess.table[idx][i] = BLACK
-                    yield guess
-
-                if cwhite < nwhite:
-                    guess = copy.deepcopy(self)
-                    guess.table[idx][i] = WHITE
-                    yield guess
+                guess = copy.deepcopy(self)
+                guess.table[idx][i] = color
+                return guess

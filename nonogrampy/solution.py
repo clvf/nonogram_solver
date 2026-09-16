@@ -77,7 +77,7 @@ class Solution:
                         pixel_array[start_idx : start_idx + color_depth] = BLACK
                     except IndexError as e:
                         logging.exception(
-                            "BMP coordinates x,y: %d,%d; " "start idx: %d",
+                            "BMP coordinates x,y: %d,%d; start idx: %d",
                             x,
                             y,
                             start_idx,

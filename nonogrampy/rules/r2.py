@@ -62,14 +62,12 @@ def narrow_boundaries(mask, meta):
                         runs of run j
     """
     for block_idx, block in enumerate(meta.blocks):
-
         runs_in_block_range = rules._runs_in_block_range(block, mask)
 
         # runs in the block's range that are longer than the block length
         for black_segment in [
             r for r in runs_in_block_range if block.length < r.length
         ]:
-
             # if this is the last block in line
             if (
                 (

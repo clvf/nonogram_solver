@@ -234,12 +234,21 @@ def rule_3_3_1(mask, meta):
         block.end = block.start + block.length - 1
         # (4)
         if prev_block and prev_block.end == block.start - 1:
-            assert block.start - 2 > 0
+            if block.start - 2 <= 0:
+                raise DiscrepancyInModel(
+                    "R3.3-1: second black cell doesn't leave room"
+                    " for the first one - "
+                    "'{}' meta: {}".format(mask.decode("ascii"), meta)
+                )
             prev_block.end = block.start - 2
 
         # (3)
         if next_block and next_block.start < block.end + 2:
-            assert block.end + 2 < meta.size
+            if block.end + 2 >= meta.size:
+                raise DiscrepancyInModel(
+                    "R3.3-1: overlapping not last block range is too long - "
+                    "'{}' meta: {}".format(mask.decode("ascii"), meta)
+                )
             next_block.start = block.end + 2
 
 
